@@ -5,16 +5,18 @@ const saveReactionResult = async (req, res) => {
   try {
     const userId = req.user.id;
     const { score, metadata } = req.body;
-    
-    // score = reaction_time_ms, metadata = { attempts, averageTime }
+
+    // Adapt to current schema: store one row per attempt
     const attempts = metadata?.attempts || [];
-    const averageTime = metadata?.averageTime || score;
+    const attemptNumber = (metadata?.attemptIndex ?? attempts.length) || 1;
+    const best = attempts.length ? Math.min(...attempts, score) : score;
+    const isBest = score <= best ? 1 : 0;
 
     await pool.query(
       `INSERT INTO reaction_results 
-       (user_id, reaction_time_ms, attempts_count, best_time_ms, average_time_ms, all_attempts) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [userId, score, attempts.length, Math.min(...attempts, score), averageTime, JSON.stringify(attempts)]
+       (user_id, reaction_time_ms, attempt_number, is_best) 
+       VALUES (?, ?, ?, ?)`,
+      [userId, score, attemptNumber, isBest]
     );
 
     res.status(201).json({ message: 'Reakcijas rezultāts saglabāts!' });
@@ -29,16 +31,19 @@ const saveMemoryResult = async (req, res) => {
   try {
     const userId = req.user.id;
     const { score, metadata } = req.body;
-    
-    // score = total_score, metadata = { level, accuracy, isCorrect }
+
+    // Adapt to current memory_results schema
     const level = metadata?.level || 1;
-    const accuracy = metadata?.accuracy || 100;
+    const accuracy = metadata?.accuracy ?? 100;
+    const gridSize = level * 4;
+    const totalCorrect = Math.round((accuracy / 100) * gridSize) || 0;
+    const totalMistakes = gridSize - totalCorrect;
 
     await pool.query(
       `INSERT INTO memory_results 
-       (user_id, level_reached, total_score, accuracy_percentage, sequence_length, correct_tiles, total_tiles) 
+       (user_id, level_reached, total_correct, total_mistakes, grid_size, tiles_to_remember, accuracy_percent) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [userId, level, score, accuracy, level * 4, Math.round((accuracy / 100) * level * 4), level * 4]
+      [userId, level, totalCorrect, totalMistakes, gridSize, gridSize, accuracy]
     );
 
     res.status(201).json({ message: 'Atmiņas rezultāts saglabāts!' });
@@ -53,17 +58,19 @@ const saveNumberMemoryResult = async (req, res) => {
   try {
     const userId = req.user.id;
     const { score, metadata } = req.body;
-    
-    // score = total_score, metadata = { level, isCorrect, totalAttempts }
+
+    // Adapt to current number_memory_results schema
     const level = metadata?.level || 1;
-    const totalAttempts = metadata?.totalAttempts || 1;
-    const accuracy = metadata?.isCorrect ? 100 : 0;
+    const digitsRemembered = Math.min(3 + level, 15);
+    const correctAnswers = metadata?.correctAnswers ?? (metadata?.isCorrect ? 1 : 0);
+    const wrongNumber = metadata?.wrongNumber || null;
+    const correctNumber = metadata?.correctNumber || null;
 
     await pool.query(
       `INSERT INTO number_memory_results 
-       (user_id, highest_level, total_score, accuracy_percentage, digits_remembered, total_attempts) 
+       (user_id, level_reached, digits_remembered, correct_answers, wrong_number, correct_number) 
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [userId, level, score, accuracy, Math.min(3 + level, 15), totalAttempts]
+      [userId, level, digitsRemembered, correctAnswers, wrongNumber, correctNumber]
     );
 
     res.status(201).json({ message: 'Skaitļu atmiņas rezultāts saglabāts!' });
@@ -78,16 +85,21 @@ const saveTypingResult = async (req, res) => {
   try {
     const userId = req.user.id;
     const { score, metadata } = req.body;
-    
-    // score = wpm, metadata = { wpm, accuracy }
+
+    // Adapt to typing_results schema
     const wpm = score;
-    const accuracy = metadata?.accuracy || 100;
+    const cpm = metadata?.cpm ?? Math.round(wpm * 5);
+    const accuracy = metadata?.accuracy ?? 100;
+    const totalChars = metadata?.totalChars ?? Math.round((cpm / 60) * (metadata?.testDurationSeconds || 60));
+    const correctChars = Math.round((accuracy / 100) * totalChars) || 0;
+    const incorrectChars = totalChars - correctChars;
+    const duration = metadata?.testDurationSeconds ?? 60;
 
     await pool.query(
       `INSERT INTO typing_results 
-       (user_id, wpm, accuracy_percentage, characters_typed, errors_count, test_duration_seconds) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [userId, wpm, accuracy, 0, 0, 60]
+       (user_id, wpm, cpm, accuracy_percent, correct_chars, incorrect_chars, total_chars, test_duration_seconds) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [userId, wpm, cpm, accuracy, correctChars, incorrectChars, totalChars, duration]
     );
 
     res.status(201).json({ message: 'Rakstīšanas rezultāts saglabāts!' });
@@ -102,18 +114,22 @@ const saveAimResult = async (req, res) => {
   try {
     const userId = req.user.id;
     const { score, metadata } = req.body;
-    
-    // score = total_score, metadata = { accuracy, avgReactionTime, hits, misses }
-    const accuracy = metadata?.accuracy || 0;
-    const avgReactionTime = metadata?.avgReactionTime || 0;
-    const hits = metadata?.hits || 0;
-    const misses = metadata?.misses || 0;
+
+    // Map to current aim_results schema
+    const accuracy = metadata?.accuracy ?? 0;
+    const avgReactionTime = metadata?.avgReactionTime ?? 0;
+    const hits = metadata?.hits ?? 0;
+    const misses = metadata?.misses ?? 0;
+    const totalTargets = hits + misses;
+    const best = metadata?.bestTime ?? avgReactionTime;
+    const worst = metadata?.worstTime ?? null;
+    const totalTime = metadata?.totalTimeMs ?? null;
 
     await pool.query(
       `INSERT INTO aim_results 
-       (user_id, average_time_ms, best_time_ms, total_targets, hits, misses, accuracy_percentage) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [userId, avgReactionTime, avgReactionTime, hits + misses, hits, misses, accuracy]
+       (user_id, total_targets, targets_hit, targets_missed, average_time_ms, best_time_ms, worst_time_ms, accuracy_percent, total_time_ms) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [userId, totalTargets, hits, misses, avgReactionTime, best, worst, accuracy, totalTime]
     );
 
     res.status(201).json({ message: 'Precizitātes rezultāts saglabāts!' });
@@ -165,11 +181,11 @@ const getAllResults = async (req, res) => {
       [userId]
     );
     const [memory] = await pool.query(
-      `SELECT id, user_id, total_score as score, 'memory' as test_type, created_at FROM memory_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
+      `SELECT id, user_id, total_correct as score, 'memory' as test_type, created_at FROM memory_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
       [userId]
     );
     const [numberMemory] = await pool.query(
-      `SELECT id, user_id, total_score as score, 'number_memory' as test_type, created_at FROM number_memory_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
+      `SELECT id, user_id, correct_answers as score, 'number_memory' as test_type, created_at FROM number_memory_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
       [userId]
     );
     const [typing] = await pool.query(
@@ -177,7 +193,7 @@ const getAllResults = async (req, res) => {
       [userId]
     );
     const [aim] = await pool.query(
-      `SELECT id, user_id, accuracy_percentage as score, 'aim' as test_type, created_at FROM aim_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
+      `SELECT id, user_id, accuracy_percent as score, 'aim' as test_type, created_at FROM aim_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
       [userId]
     );
 
