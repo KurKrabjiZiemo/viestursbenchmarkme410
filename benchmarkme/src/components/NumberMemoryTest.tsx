@@ -189,7 +189,12 @@ const NumberMemoryTest = ({ onBack }: NumberMemoryTestProps) => {
           </CardHeader>
           <CardContent className="text-center">
             {testState === "showing" && (
-              <div className="bg-muted/20 rounded-lg p-8 mb-6">
+              <div
+                className="bg-muted/20 rounded-lg p-8 mb-6 select-none"
+                onCopy={(e) => e.preventDefault()}
+                onContextMenu={(e) => e.preventDefault()}
+                onDragStart={(e) => e.preventDefault()}
+              >
                 <div className="text-6xl font-mono font-bold text-cognitive-primary animate-pulse-glow">
                   {formatNumberDisplay(currentNumber)}
                 </div>
@@ -202,9 +207,23 @@ const NumberMemoryTest = ({ onBack }: NumberMemoryTestProps) => {
                   type="text"
                   placeholder="Ievadi skaitli..."
                   value={userInput}
-                  onChange={(e) => setUserInput(e.target.value.replace(/\D/g, ''))}
+                  onChange={(e) => {
+                    const digitsOnly = e.target.value.replace(/\D/g, '');
+                    const limited = digitsOnly.slice(0, currentNumber.length || 15);
+                    setUserInput(limited);
+                  }}
+                  onPaste={(e) => e.preventDefault()}
+                  onDrop={(e) => e.preventDefault()}
+                  onKeyDown={(e) => {
+                    const key = e.key || '';
+                    const isPasteShortcut = (e.ctrlKey || e.metaKey) && key.toLowerCase() === 'v';
+                    const isShiftInsert = e.shiftKey && key === 'Insert';
+                    if (isPasteShortcut || isShiftInsert) {
+                      e.preventDefault();
+                    }
+                  }}
                   className="text-center text-2xl font-mono h-16 text-lg"
-                  maxLength={15}
+                  maxLength={currentNumber.length || 15}
                   autoFocus
                 />
                 <Button 

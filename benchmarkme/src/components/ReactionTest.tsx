@@ -30,6 +30,7 @@ const ReactionTest = ({ onBack }: ReactionTestProps) => {
   // Atsauces precīzai laika mērīšanai
   const startTimeRef = useRef<number>(0); // Testa sākuma laiks
   const timeoutRef = useRef<NodeJS.Timeout>(); // Taimera atsauce
+  const countdownIntervalRef = useRef<NodeJS.Timeout>(); // Atpakaļskaitīšanas intervāla atsauce
 
   // Sāk testu ar atpakaļskaitīšanu un gadījuma aizkavi
   const startTest = () => {
@@ -37,10 +38,12 @@ const ReactionTest = ({ onBack }: ReactionTestProps) => {
     setCountdown(3);
     
     // Atpakaļskaitīšana
-    const countdownInterval = setInterval(() => {
+    countdownIntervalRef.current = setInterval(() => {
       setCountdown(prev => {
         if (prev === 1) {
-          clearInterval(countdownInterval);
+          if (countdownIntervalRef.current) {
+            clearInterval(countdownIntervalRef.current);
+          }
           setCountdown(null);
           
           // Gadījuma aizkave starp 1-4 sekundēm
@@ -81,6 +84,10 @@ const ReactionTest = ({ onBack }: ReactionTestProps) => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+      }
+      setCountdown(null);
     }
   };
 
@@ -91,6 +98,9 @@ const ReactionTest = ({ onBack }: ReactionTestProps) => {
     setCountdown(null);
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
+    }
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
     }
   };
 
@@ -111,6 +121,9 @@ const ReactionTest = ({ onBack }: ReactionTestProps) => {
   // Notīra taimerus, kad komponente tiek noņemta
   useEffect(() => {
     return () => {
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+      }
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }

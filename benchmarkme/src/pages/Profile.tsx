@@ -36,7 +36,7 @@ const Profile = () => {
     // Iegūst profila datus no datubāzes
     const fetchProfile = async () => {
   try {
-    const data = await apiRequest<Profile | null>('/profiles');
+    const data = await apiRequest<Profile | null>('/users');
     setProfile(data);
   } catch (error: unknown) {
     console.error('Error fetching profile:', error);

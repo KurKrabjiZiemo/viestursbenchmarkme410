@@ -9,6 +9,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/api";
 
+// Tulkojums jo stulbais db
+const translateTestType = (testType: string): string => {
+  const translations: Record<string, string> = {
+    'reaction': 'Reakcijas Laiks',
+    'memory': 'Vizuālā Atmiņa',
+    'number_memory': 'Skaitļu Atmiņa',
+    'number-memory': 'Skaitļu Atmiņa',
+    'typing': 'Rakstīšanas Ātrums',
+    'aim': 'Precizitātes Treniņš'
+  };
+  return translations[testType] || testType.replace(/_/g, ' ');
+};
+
 // Testa rezultāta datu struktūra
 interface TestResult {
   id: string;
@@ -125,7 +138,7 @@ const Dashboard = () => {
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <Brain className="w-8 h-8 text-cognitive-primary" />
-            <h1 className="text-4xl font-bold">Snieguma Panelis</h1>
+            <h1 className="text-4xl font-bold">Sasnieguma panelis</h1>
           </div>
           <div className="flex gap-3">
             <Button onClick={() => navigate("/profile")} variant="secondary">
@@ -144,7 +157,7 @@ const Dashboard = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Kopā Testi</p>
+                  <p className="text-sm text-muted-foreground">Kopā testi</p>
                   <p className="text-3xl font-bold text-cognitive-primary">{totalTests}</p>
                 </div>
                 <Award className="w-10 h-10 text-cognitive-primary opacity-50" />
@@ -168,7 +181,7 @@ const Dashboard = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Testu Veidi</p>
+                  <p className="text-sm text-muted-foreground">Testu veidi</p>
                   <p className="text-3xl font-bold text-cognitive-success">{stats.length}</p>
                 </div>
                 <TrendingUp className="w-10 h-10 text-cognitive-success opacity-50" />
@@ -180,15 +193,15 @@ const Dashboard = () => {
         {/* Test Performance Cards */}
         <Card className="bg-gradient-card border-border/50">
           <CardHeader>
-            <CardTitle>Testu Sniegums un Uzlabojumi</CardTitle>
-            <CardDescription>Seko savam progresam dažādos kognitīvajos testos</CardDescription>
+            <CardTitle>Testu sasniegumi</CardTitle>
+            <CardDescription>Seko saviem sasniegumiem dažādos kognitīvajos testos</CardDescription>
           </CardHeader>
           <CardContent>
             {stats.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-muted-foreground">Vēl nav veikti testi. Sāc testēšanu, lai redzētu savu progresu!</p>
+                <p className="text-muted-foreground">Vēl nav veikti testi. Sāc testēšanu, lai redzētu savus rezultātus!</p>
                 <Button onClick={() => navigate("/")} className="mt-4 bg-cognitive-primary hover:bg-cognitive-primary/80">
-                  Veikt Pirmo Testu
+                  Veikt pirmo testu
                 </Button>
               </div>
             ) : (
@@ -198,7 +211,7 @@ const Dashboard = () => {
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <h3 className="font-semibold text-lg capitalize">
-                          {stat.testType.replace(/_/g, ' ')}
+                          {translateTestType(stat.testType)}
                         </h3>
                         <p className="text-sm text-muted-foreground">
                           Pēdējoreiz spēlēts: {new Date(stat.latestDate).toLocaleDateString()}
@@ -218,15 +231,15 @@ const Dashboard = () => {
                     
                     <div className="grid grid-cols-3 gap-4 mt-3">
                       <div>
-                        <p className="text-xs text-muted-foreground">Veikti Testi</p>
+                        <p className="text-xs text-muted-foreground">Veikti testi</p>
                         <p className="text-xl font-bold">{stat.count}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">Vidējais Rezultāts</p>
+                        <p className="text-xs text-muted-foreground">Vidējais rezultāts</p>
                         <p className="text-xl font-bold text-cognitive-accent">{stat.averageScore}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">Labākais Rezultāts</p>
+                        <p className="text-xs text-muted-foreground">Labākais rezultāts</p>
                         <p className="text-xl font-bold text-cognitive-success">{stat.bestScore}</p>
                       </div>
                     </div>
@@ -240,7 +253,7 @@ const Dashboard = () => {
         {/* Recent Activity */}
         <Card className="bg-gradient-card border-border/50">
           <CardHeader>
-            <CardTitle>Jaunākās Aktivitātes</CardTitle>
+            <CardTitle>Jaunākās aktivitātes</CardTitle>
             <CardDescription>Tavi jaunākie testa rezultāti</CardDescription>
           </CardHeader>
           <CardContent>
@@ -248,7 +261,7 @@ const Dashboard = () => {
               {results.slice(0, 10).map((result) => (
                 <div key={result.id} className="flex justify-between items-center p-3 rounded-lg bg-muted/20">
                   <div>
-                    <p className="font-medium capitalize">{result.test_type.replace(/_/g, ' ')}</p>
+                    <p className="font-medium capitalize">{translateTestType(result.test_type)}</p>
                     <p className="text-sm text-muted-foreground">
                       {new Date(result.created_at).toLocaleString()}
                     </p>

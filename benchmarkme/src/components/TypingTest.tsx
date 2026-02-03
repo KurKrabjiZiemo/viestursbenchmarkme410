@@ -133,6 +133,12 @@ const TypingTest = ({ onBack }: TypingTestProps) => {
     setTestState("complete");
   }, [startTime, userInput, testText, saveTestResult]);
 
+  // Saglabā atsauci uz jaunāko endTest, lai taimers neapstātos
+  const endTestRef = useRef(endTest);
+  useEffect(() => {
+    endTestRef.current = endTest;
+  }, [endTest]);
+
   const resetTest = () => {
     setTestState("ready");
     setTestText("");
@@ -163,31 +169,32 @@ const TypingTest = ({ onBack }: TypingTestProps) => {
 
   // Timer effect
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
-    if (testState === "active" && timeLeft > 0) {
+    let interval: ReturnType<typeof setInterval> | null = null;
+
+    if (testState === "active") {
       interval = setInterval(() => {
         setTimeLeft(prev => {
           if (prev <= 1) {
-            endTest();
+            // call the latest endTest implementation from ref
+            endTestRef.current();
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
     }
-    
+
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [testState, timeLeft, endTest]);
+  }, [testState]);
 
   const renderTextWithHighlight = () => {
     const words = testText.split(' ');
     const typedWords = userInput.split(' ');
     
     return words.map((word, index) => {
-      let className = "px-1 py-0.5 rounded";
+      let className = "px-1 py-0.5 rounded select-none";
       
       if (index < typedWords.length - 1) {
         className += typedWords[index] === word 
@@ -274,7 +281,7 @@ const TypingTest = ({ onBack }: TypingTestProps) => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {testState === "ready" && (
+                    {testState === "ready" && (
               <div className="text-center">
                 <Button 
                   onClick={startTest} 
@@ -290,7 +297,12 @@ const TypingTest = ({ onBack }: TypingTestProps) => {
             {(testState === "active" || testState === "complete") && (
               <div className="space-y-6">
                 {/*Rakstit*/}
-                <div className="bg-muted/20 rounded-lg p-6">
+                <div
+                  className="bg-muted/20 rounded-lg p-6 select-none"
+                  onCopy={(e) => e.preventDefault()}
+                  onContextMenu={(e) => e.preventDefault()}
+                  onDragStart={(e) => e.preventDefault()}
+                >
                   <div className="text-lg leading-relaxed font-mono">
                     {renderTextWithHighlight()}
                   </div>
@@ -303,6 +315,8 @@ const TypingTest = ({ onBack }: TypingTestProps) => {
                     placeholder="Sāc rakstīt šeit..."
                     value={userInput}
                     onChange={(e) => handleInputChange(e.target.value)}
+                    onPaste={(e) => e.preventDefault()}
+                    onDrop={(e) => e.preventDefault()}
                     disabled={testState === "complete"}
                     className="min-h-32 text-lg font-mono resize-none"
                     spellCheck={false}

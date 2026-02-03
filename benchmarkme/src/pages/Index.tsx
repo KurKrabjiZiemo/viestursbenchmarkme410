@@ -11,6 +11,19 @@ import NumberMemoryTest from "@/components/NumberMemoryTest";
 import TypingTest from "@/components/TypingTest";
 import AimTrainer from "@/components/AimTrainer";
 
+// Tulkojums jo stulbais db
+const translateTestType = (testType: string): string => {
+  const translations: Record<string, string> = {
+    'reaction': 'Reakcijas Laiks',
+    'memory': 'Vizuālā Atmiņa',
+    'number_memory': 'Skaitļu Atmiņa',
+    'number-memory': 'Skaitļu Atmiņa',
+    'typing': 'Rakstīšanas Ātrums',
+    'aim': 'Precizitātes Treniņš'
+  };
+  return translations[testType] || testType.replace(/_/g, ' ');
+};
+
 // Definē visus iespējamos testu veidus
 type TestType = "dashboard" | "reaction" | "memory" | "number" | "typing" | "aim";
 
@@ -65,7 +78,7 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
     const fetchResults = async () => {
   try {
     // SVARĪGI <TestResult[]> norāda atgriežamo tipu
-    const data = await apiRequest<TestResult[]>('/test-results/all');
+    const data = await apiRequest<TestResult[] >('/test-results/all');
     setResults(data);
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -192,7 +205,7 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
                   variant="secondary" 
                   className="w-full group-hover:bg-cognitive-accent group-hover:text-cognitive-accent-foreground transition-all duration-300"
                 >
-                  Sākt Testu
+                  Sākt!
                   <Target className="w-4 h-4 ml-2" />
                 </Button>
               </CardContent>
@@ -207,7 +220,7 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-cognitive-success" />
-              Jaunākās Aktivitātes
+              Jaunākās aktivitātes
             </CardTitle>
             <CardDescription>Tavi jaunākie testa rezultāti</CardDescription>
           </CardHeader>
@@ -216,7 +229,7 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
               {results.map((result) => (
                 <div key={result.id} className="flex justify-between items-center p-3 rounded-lg bg-muted/20">
                   <div>
-                    <p className="font-medium capitalize">{result.test_type.replace(/_/g, ' ')}</p>
+                    <p className="font-medium capitalize">{translateTestType(result.test_type)}</p>
                     <p className="text-sm text-muted-foreground">
                       {new Date(result.created_at).toLocaleString()}
                     </p>

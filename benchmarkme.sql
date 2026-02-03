@@ -21,8 +21,8 @@ USE `benchmarkme`;
 
 -- Dumping structure for table benchmarkme.aim_results
 CREATE TABLE IF NOT EXISTS `aim_results` (
-  `id` char(36) NOT NULL,
-  `user_id` char(36) NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
   `total_targets` int(11) NOT NULL,
   `targets_hit` int(11) NOT NULL,
   `targets_missed` int(11) DEFAULT 0,
@@ -42,8 +42,8 @@ CREATE TABLE IF NOT EXISTS `aim_results` (
 
 -- Dumping structure for table benchmarkme.memory_results
 CREATE TABLE IF NOT EXISTS `memory_results` (
-  `id` char(36) NOT NULL,
-  `user_id` char(36) NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
   `level_reached` int(11) NOT NULL,
   `total_correct` int(11) NOT NULL,
   `total_mistakes` int(11) DEFAULT 0,
@@ -61,8 +61,8 @@ CREATE TABLE IF NOT EXISTS `memory_results` (
 
 -- Dumping structure for table benchmarkme.number_memory_results
 CREATE TABLE IF NOT EXISTS `number_memory_results` (
-  `id` char(36) NOT NULL,
-  `user_id` char(36) NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
   `level_reached` int(11) NOT NULL,
   `digits_remembered` int(11) NOT NULL,
   `correct_answers` int(11) NOT NULL,
@@ -79,8 +79,8 @@ CREATE TABLE IF NOT EXISTS `number_memory_results` (
 
 -- Dumping structure for table benchmarkme.reaction_results
 CREATE TABLE IF NOT EXISTS `reaction_results` (
-  `id` char(36) NOT NULL,
-  `user_id` char(36) NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
   `reaction_time_ms` int(11) NOT NULL,
   `attempt_number` int(11) DEFAULT 1,
   `is_best` tinyint(1) DEFAULT 0,
@@ -95,8 +95,8 @@ CREATE TABLE IF NOT EXISTS `reaction_results` (
 
 -- Dumping structure for table benchmarkme.typing_results
 CREATE TABLE IF NOT EXISTS `typing_results` (
-  `id` char(36) NOT NULL,
-  `user_id` char(36) NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
   `wpm` int(11) NOT NULL,
   `cpm` int(11) NOT NULL,
   `accuracy_percent` decimal(5,2) NOT NULL,
@@ -115,7 +115,7 @@ CREATE TABLE IF NOT EXISTS `typing_results` (
 
 -- Dumping structure for table benchmarkme.users
 CREATE TABLE IF NOT EXISTS `users` (
-  `id` char(36) NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `email` varchar(255) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -125,8 +125,8 @@ CREATE TABLE IF NOT EXISTS `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table benchmarkme.users: ~1 rows (approximately)
-INSERT IGNORE INTO `users` (`id`, `email`, `password_hash`, `created_at`, `updated_at`) VALUES
-	('', 'viestursi2006@inbox.lv', '$2b$10$nrHMQjbvPNFw.a23mwxJh.WmMnxXlVnNkKBvxunDRGuqLjHZC26ge', '2025-12-16 20:01:53', '2025-12-16 20:01:53');
+INSERT IGNORE INTO `users` (`email`, `password_hash`, `created_at`, `updated_at`) VALUES
+  ('viestursi2006@inbox.lv', '$2b$10$nrHMQjbvPNFw.a23mwxJh.WmMnxXlVnNkKBvxunDRGuqLjHZC26ge', '2025-12-16 20:01:53', '2025-12-16 20:01:53');
 
 -- Dumping structure for trigger benchmarkme.trg_aim_results_uuid
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION';
