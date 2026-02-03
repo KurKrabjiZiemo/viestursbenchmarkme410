@@ -1,7 +1,7 @@
 // Importē nepieciešamos React hook-us un komponentus
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, User, LogOut } from "lucide-react";
+import { ArrowLeft, Home, User, LogOut } from "lucide-react";
 // Importē UI komponentus
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +19,7 @@ interface Profile {
 // Profila lapa - rāda lietotāja informāciju
 const Profile = () => {
   // Iegūst lietotāju un izrakstīšanās funkciju
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   // Saglabā profila datus un ielādes stāvokli
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -27,6 +27,10 @@ const Profile = () => {
 
   // Ielādē profila datus, kad komponente tiek ielādēta
   useEffect(() => {
+    // Gaida, līdz autentifikācija ir pārbaudīta
+    if (authLoading) {
+      return;
+    }
     // Ja lietotājs nav pieteicies, pārvirza uz autentifikācijas lapu
     if (!user) {
       navigate("/auth");
@@ -70,11 +74,20 @@ const Profile = () => {
           <Button 
             variant="secondary" 
             size="sm" 
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/dashboard")}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
             Atpakaļ uz Paneli
+          </Button>
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2"
+          >
+            <Home className="w-4 h-4" />
+            Sākumlapa
           </Button>
         </div>
 

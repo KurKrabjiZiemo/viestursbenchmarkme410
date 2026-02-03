@@ -64,7 +64,10 @@ const ReactionTest = ({ onBack }: ReactionTestProps) => {
 
   // Apstrādā lietotāja klikšķi
   const handleClick = () => {
-    if (testState === "active") {
+    if (testState === "ready") {
+      // Ja tests vēl nav sākts, sāk to
+      startTest();
+    } else if (testState === "active") {
       // Ja tests ir aktīvs, mēra reakcijas laiku
       const endTime = performance.now();
       const reaction = Math.round(endTime - startTimeRef.current);
@@ -88,6 +91,9 @@ const ReactionTest = ({ onBack }: ReactionTestProps) => {
         clearInterval(countdownIntervalRef.current);
       }
       setCountdown(null);
+    } else if (testState === "complete" || testState === "early") {
+      // Ja tests ir pabeigts vai bija pārāk agrs, atiestatīt
+      resetTest();
     }
   };
 
@@ -115,7 +121,7 @@ const ReactionTest = ({ onBack }: ReactionTestProps) => {
     if (time < 200) return { text: "Izcili", color: "text-cognitive-success" };
     if (time < 250) return { text: "Labi", color: "text-cognitive-accent" };
     if (time < 300) return { text: "Vidēji", color: "text-cognitive-warning" };
-    return { text: "Nepieciešama Prakse", color: "text-destructive" };
+    return { text: "Nepieciešama prakse", color: "text-destructive" };
   };
 
   // Notīra taimerus, kad komponente tiek noņemta
@@ -156,17 +162,16 @@ const ReactionTest = ({ onBack }: ReactionTestProps) => {
             <CardTitle>
               {testState === "ready" && "Nospied Sākt, lai sāktu"}
               {testState === "waiting" && countdown && `Sagatavojies... ${countdown}`}
-              {testState === "waiting" && !countdown && "Gaidi signālu..."}
-              {testState === "active" && "NOSPIED TAGAD!"}
-              {testState === "complete" && `${reactionTime}ms`}
+              {testState === "waiting" && !countdown && "Gaidi..."}
+              {testState === "active" && "SPIED!"}
+              {testState === "complete" && "Tavs rezultāts"}
               {testState === "early" && "Par agru!"}
             </CardTitle>
             <CardDescription>
               {testState === "ready" && "Pārbaudi savu reakcijas ātrumu, nospiežot, kad ekrāns mainās"}
-              {testState === "waiting" && "Nenospied, kamēr neredzēsi signālu"}
+              {testState === "waiting" && "Nenospied, kamēr nav zaļš"}
               {testState === "active" && "Ātri! Nospied, cik vari ātri"}
-              {testState === "complete" && getPerformanceRating(reactionTime!).text}
-              {testState === "early" && "Gaidi zaļo signālu pirms nospiešanas"}
+              {testState === "early" && "Gaidi zaļo lauku pirms nospiešanas"}
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
@@ -181,10 +186,11 @@ const ReactionTest = ({ onBack }: ReactionTestProps) => {
               `}
               onClick={handleClick}
             >
-              {testState === "ready" && "Nospied, lai sāktu"}
+              {testState === "ready" && "Sākt"}
               {testState === "waiting" && "Gaidi..."}
               {testState === "active" && "NOSPIED!"}
-              {testState === "complete" && (
+              {testState === "complete" &&  
+              (
                 <div className="text-center">
                   <div className={`text-4xl ${getPerformanceRating(reactionTime!).color}`}>
                     {reactionTime}ms
@@ -192,24 +198,12 @@ const ReactionTest = ({ onBack }: ReactionTestProps) => {
                   <div className="text-sm text-muted-foreground mt-2">
                     {getPerformanceRating(reactionTime!).text}
                   </div>
+                  <div className="text-base mt-4 opacity-70">
+                    Klikšķini, lai mēģinātu vēlreiz!
+                  </div>
                 </div>
               )}
-              {testState === "early" && "Par Agru!"}
-            </div>
-
-            <div className="flex gap-4 mt-6 justify-center">
-              {testState === "ready" && (
-                <Button onClick={startTest} className="bg-cognitive-primary hover:bg-cognitive-primary/80">
-                  <Play className="w-4 h-4 mr-2" />
-                  Sākt Testu
-                </Button>
-              )}
-              {(testState === "complete" || testState === "early") && (
-                <Button onClick={resetTest} variant="secondary">
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Mēģināt Vēlreiz
-                </Button>
-              )}
+              {testState === "early" && "Mēģinam vēlreiz?"}
             </div>
           </CardContent>
         </Card>

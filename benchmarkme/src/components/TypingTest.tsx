@@ -11,10 +11,13 @@ interface TypingTestProps {
 }
 
 // Testa stāvokļa tipi
-type TestState = "ready" | "active" | "complete";
+type TestState = "ready" | "countdown" | "active" | "complete";
 
 // Testa ilgums sekundēs
 const TEST_DURATION = 60;
+
+// Priekšskaita ilgums sekundēs
+const COUNTDOWN_DURATION = 5;
 
 // Parauga teksti latviskajiem rakstīšanas testiem
 const SAMPLE_TEXTS = [
@@ -35,6 +38,7 @@ const TypingTest = ({ onBack }: TypingTestProps) => {
   const [testText, setTestText] = useState(""); // Teksts, kas jāraksta
   const [userInput, setUserInput] = useState(""); // Lietotāja ievadītais teksts
   const [timeLeft, setTimeLeft] = useState(TEST_DURATION); // Atlikušais laiks
+  const [countdownLeft, setCountdownLeft] = useState(COUNTDOWN_DURATION); // Atlikušais priekšskaita laiks
   const [startTime, setStartTime] = useState<number | null>(null); // Testa sākuma laiks
   const [wpm, setWpm] = useState(0); // Vārdi minūtē (Words Per Minute)
   const [accuracy, setAccuracy] = useState(100); // Precizitāte procentos
@@ -49,14 +53,10 @@ const TypingTest = ({ onBack }: TypingTestProps) => {
     setTestText(randomText);
     setUserInput("");
     setTimeLeft(TEST_DURATION);
-    setStartTime(Date.now());
-    setTestState("active");
+    setCountdownLeft(COUNTDOWN_DURATION);
+    setStartTime(null);
+    setTestState("countdown");
     setCurrentWordIndex(0);
-    
-    // Fokusē teksta lauku
-    setTimeout(() => {
-      textareaRef.current?.focus();
-    }, 100);
   };
 
   // Aprēķina rakstīšanas ātrumu
@@ -144,6 +144,7 @@ const TypingTest = ({ onBack }: TypingTestProps) => {
     setTestText("");
     setUserInput("");
     setTimeLeft(TEST_DURATION);
+    setCountdownLeft(COUNTDOWN_DURATION);
     setStartTime(null);
     setWpm(0);
     setAccuracy(100);
@@ -171,7 +172,24 @@ const TypingTest = ({ onBack }: TypingTestProps) => {
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
 
-    if (testState === "active") {
+    if (testState === "countdown") {
+      interval = setInterval(() => {
+        setCountdownLeft(prev => {
+          if (prev <= 1) {
+            // Start the actual test
+            setTestState("active");
+            setStartTime(Date.now());
+            setTimeLeft(TEST_DURATION);
+            // Focus textarea after countdown ends
+            setTimeout(() => {
+              textareaRef.current?.focus();
+            }, 100);
+            return COUNTDOWN_DURATION;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else if (testState === "active") {
       interval = setInterval(() => {
         setTimeLeft(prev => {
           if (prev <= 1) {
@@ -193,25 +211,22 @@ const TypingTest = ({ onBack }: TypingTestProps) => {
     const words = testText.split(' ');
     const typedWords = userInput.split(' ');
     
-    return words.map((word, index) => {
-      let className = "px-1 py-0.5 rounded select-none";
+    const getWordClass = (index: number): string => {
+      const base = "px-1 py-0.5 rounded select-none";
+      const isTyped = index < typedWords.length - 1;
+      const isCurrent = index === typedWords.length - 1;
+      const isCorrect = typedWords[index] === words[index];
       
-      if (index < typedWords.length - 1) {
-        className += typedWords[index] === word 
-          ? " bg-cognitive-success/20 text-cognitive-success" 
-          : " bg-destructive/20 text-destructive";
-      } else if (index === typedWords.length - 1) {
-        className += " bg-cognitive-accent/20 text-cognitive-accent";
-      } else {
-        className += " text-muted-foreground";
+      if (isTyped || (isCurrent && testState === "complete")) {
+        return base + (isCorrect ? " bg-cognitive-success/20 text-cognitive-success" : " bg-destructive/20 text-destructive");
       }
-      
-      return (
-        <span key={index} className={className}>
-          {word}
-        </span>
-      );
-    }).reduce((acc, word, index) => {
+      if (isCurrent) return base + " bg-cognitive-accent/20 text-cognitive-accent";
+      return base + " text-muted-foreground";
+    };
+    
+    return words.map((word, index) => (
+      <span key={index} className={getWordClass(index)}>{word}</span>
+    )).reduce((acc, word, index) => {
       if (index === 0) return [word];
       return [...acc, ' ', word];
     }, [] as React.ReactNode[]);
@@ -246,11 +261,11 @@ const TypingTest = ({ onBack }: TypingTestProps) => {
                   <Timer className="w-4 h-4 text-cognitive-warning" />
                   <div className="text-2xl font-bold text-cognitive-warning">{timeLeft}s</div>
                 </div>
-                <div className="text-sm text-muted-foreground">Atlicis Laiks</div>
+                <div className="text-sm text-muted-foreground">Laiks</div>
               </div>
               <div className="space-y-1">
                 <div className="text-2xl font-bold text-cognitive-primary">{wpm}</div>
-                <div className="text-sm text-muted-foreground">VPM</div>
+                <div className="text-sm text-muted-foreground">VM</div>
               </div>
               <div className="space-y-1">
                 <div className="text-2xl font-bold text-cognitive-success">{accuracy}%</div>
@@ -272,7 +287,7 @@ const TypingTest = ({ onBack }: TypingTestProps) => {
             <CardTitle>
               {testState === "ready" && "Gatavs rakstīt?"}
               {testState === "active" && "Ieraksti tekstu zemāk"}
-              {testState === "complete" && `${wpm} VPM - ${getPerformanceRating(wpm).text}`}
+              {testState === "complete" && `${wpm} VM - ${getPerformanceRating(wpm).text}`}
             </CardTitle>
             <CardDescription>
               {testState === "ready" && "Pārbaudi savu rakstīšanas ātrumu un precizitāti 60 sekundes"}
@@ -343,6 +358,15 @@ const TypingTest = ({ onBack }: TypingTestProps) => {
                 )}
               </div>
             )}
+
+            {testState === "countdown" && (
+              <div className="text-center py-12">
+                <div className="text-6xl font-bold text-cognitive-primary mb-4 animate-pulse">
+                  {countdownLeft}
+                </div>
+                <p className="text-lg text-muted-foreground">Sagatavojies!</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -361,11 +385,11 @@ const TypingTest = ({ onBack }: TypingTestProps) => {
                 </div>
                 <div className="space-y-1">
                   <div className="text-2xl font-bold text-cognitive-primary">{getAverageWPM()}</div>
-                  <div className="text-sm text-muted-foreground">Vid. VPM</div>
+                  <div className="text-sm text-muted-foreground">Vid. VM</div>
                 </div>
                 <div className="space-y-1">
                   <div className="text-2xl font-bold text-cognitive-success">{getBestWPM()}</div>
-                  <div className="text-sm text-muted-foreground">Labākais VPM</div>
+                  <div className="text-sm text-muted-foreground">Labākais VM</div>
                 </div>
                 <div className="space-y-1">
                   <div className="text-2xl font-bold text-cognitive-warning">

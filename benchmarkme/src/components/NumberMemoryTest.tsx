@@ -30,6 +30,7 @@ const NumberMemoryTest = ({ onBack }: NumberMemoryTestProps) => {
   const [score, setScore] = useState(0); // Iegūtie punkti
   const [attempts, setAttempts] = useState<{ level: number; correct: boolean; number: string; input: string }[]>([]); // Visi mēģinājumi
   const [showTime, setShowTime] = useState(3); // Cik ilgi parāda skaitli (sekundēs)
+  const [lastAttemptCorrect, setLastAttemptCorrect] = useState(false); // Lietotājam spiests mēģināt no jauna, ja zaudē
 
   // Ģenerē gadījuma skaitli ar noteiktu ciparu skaitu
   const generateNumber = (digits: number) => {
@@ -78,6 +79,7 @@ const NumberMemoryTest = ({ onBack }: NumberMemoryTestProps) => {
     };
     
     setAttempts(prev => [...prev, attempt]);
+    setLastAttemptCorrect(isCorrect);
     
     // Ja pareizi, piešķir punktus un palielina līmeni
     const newScore = isCorrect ? score + currentLevel * 100 : score;
@@ -105,6 +107,7 @@ const NumberMemoryTest = ({ onBack }: NumberMemoryTestProps) => {
     setScore(0);
     setAttempts([]);
     setShowTime(3);
+    setLastAttemptCorrect(false);
   };
 
   // Aprēķina precizitāti procentos
@@ -175,13 +178,13 @@ const NumberMemoryTest = ({ onBack }: NumberMemoryTestProps) => {
               {testState === "recalling" && <EyeOff className="w-6 h-6 text-cognitive-accent" />}
               {testState === "complete" && <Hash className="w-6 h-6 text-cognitive-success" />}
               
-              {testState === "ready" && "Gatavs iegaumēt"}
+              {testState === "ready" && "Gatavs iegaumēt?"}
               {testState === "showing" && `Atceries šo skaitli (${showTime}s)`}
               {testState === "recalling" && "Ieraksti skaitli"}
               {testState === "complete" && (userInput === currentNumber ? "Pareizi!" : "Nepareizi")}
             </CardTitle>
             <CardDescription>
-              {testState === "ready" && `Iegaumē ${Math.min(3 + currentLevel, 15)}-ciparu skaitli`}
+              {testState === "ready" && `Iegaumē ${Math.min(3 + currentLevel, 15)} ciparu skaitli`}
               {testState === "showing" && "Koncentrējies uz secību"}
               {testState === "recalling" && "Ievadi skaitli, kuru redzēji"}
               {testState === "complete" && `Skaitlis bija: ${formatNumberDisplay(currentNumber)}`}
@@ -271,7 +274,8 @@ const NumberMemoryTest = ({ onBack }: NumberMemoryTestProps) => {
               {testState === "complete" && (
                 <div className="flex gap-2 flex-wrap justify-center">
                   <Button 
-                    onClick={startTest} 
+                    onClick={startTest}
+                    disabled={!lastAttemptCorrect}
                     className="bg-cognitive-primary hover:bg-cognitive-primary/80"
                   >
                     Nākamais Līmenis

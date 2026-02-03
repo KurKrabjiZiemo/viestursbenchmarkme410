@@ -35,12 +35,19 @@ const MemoryTest = ({ onBack }: MemoryTestProps) => {
   const [score, setScore] = useState(0); // Iegūtie punkti
   const [showingIndex, setShowingIndex] = useState(0); // Kurš elements pašlaik tiek rādīts
   const [timeLeft, setTimeLeft] = useState(0); // Atlikušais laiks
+  const [lastAttemptCorrect, setLastAttemptCorrect] = useState(false); // Lietotājam spiests mēģināt no jauna, ja zaudē
 
-  // Ģenerē gadījuma secību ar noteiktu garumu
+  // Ģenerē gadījuma secību ar noteiktu garumu (bez atkārtošanās)
   const generateSequence = (length: number) => {
     const newSequence: number[] = [];
+    const usedIndices = new Set<number>();
     for (let i = 0; i < length; i++) {
-      newSequence.push(Math.floor(Math.random() * (GRID_SIZE * GRID_SIZE)));
+      let randomIndex: number;
+      do {
+        randomIndex = Math.floor(Math.random() * (GRID_SIZE * GRID_SIZE));
+      } while (usedIndices.has(randomIndex));
+      usedIndices.add(randomIndex);
+      newSequence.push(randomIndex);
     }
     return newSequence;
   };
@@ -57,7 +64,7 @@ const MemoryTest = ({ onBack }: MemoryTestProps) => {
 
   // Apstrādā lietotāja klikšķi uz režģa šūnas
   const handleCellClick = (index: number) => {
-    if (testState === "recalling") {
+    if (testState === "recalling" && !userSequence.includes(index)) {
       const newUserSequence = [...userSequence, index];
       setUserSequence(newUserSequence);
 
@@ -69,6 +76,7 @@ const MemoryTest = ({ onBack }: MemoryTestProps) => {
           setScore(newScore); // Piešķir punktus
           setCurrentLevel(currentLevel + 1); // Palielina līmeni
         }
+        setLastAttemptCorrect(isCorrect);
         setTestState("complete");
         
         // Saglabā rezultātu datubāzē
@@ -90,6 +98,7 @@ const MemoryTest = ({ onBack }: MemoryTestProps) => {
     setScore(0);
     setShowingIndex(0);
     setTimeLeft(0);
+    setLastAttemptCorrect(false);
   };
 
   // Aprēķina precizitāti procentos
@@ -205,14 +214,14 @@ const MemoryTest = ({ onBack }: MemoryTestProps) => {
               
               {testState === "ready" && "Gatavs sākt"}
               {testState === "showing" && "Skaties secību"}
-              {testState === "memorizing" && `Atceries modeļu (${timeLeft}s)`}
-              {testState === "recalling" && "Nospied secību"}
-              {testState === "complete" && `${currentLevel - 1}. līmenis Pabeigts!`}
+              {testState === "memorizing" && `Atceries kvadrātus (${timeLeft}s)`}
+              {testState === "recalling" && "Atkārto secību"}
+              {testState === "complete" && (lastAttemptCorrect ? `${currentLevel - 1}. līmenis pabeigts!` : "Mēģini vēlreiz!")}
             </CardTitle>
             <CardDescription>
-              {testState === "ready" && "Iegaumē iezīmēto kvadrātu modeļu"}
+              {testState === "ready" && "Iegaumē iezīmētos kvadrātus!"}
               {testState === "showing" && "Pievērs uzmanību secībai"}
-              {testState === "memorizing" && "Sagatavojies reproducēt secību"}
+              {testState === "memorizing" && "Sagatavojies atkārtot secību"}
               {testState === "recalling" && "Nospied kvadrātus tajā pašā secībā"}
               {testState === "complete" && `Precizitāte: ${getAccuracy()}%`}
             </CardDescription>
@@ -227,8 +236,8 @@ const MemoryTest = ({ onBack }: MemoryTestProps) => {
                 <div
                   key={index}
                   className={`
-                    aspect-square rounded-lg border-2 transition-all duration-300 cursor-pointer flex items-center justify-center font-bold
-                    ${testState === "recalling" ? "hover:scale-105" : ""}
+                    aspect-square rounded-lg border-2 transition-all duration-300 flex items-center justify-center font-bold
+                    ${testState === "recalling" && !userSequence.includes(index) ? "cursor-pointer hover:scale-105" : testState === "recalling" && userSequence.includes(index) ? "cursor-not-allowed" : ""}
                     ${isCurrentShowing(index) 
                       ? "border-cognitive-warning bg-cognitive-warning/30 animate-pulse-glow" 
                       : ""
@@ -281,7 +290,8 @@ const MemoryTest = ({ onBack }: MemoryTestProps) => {
               {testState === "complete" && (
                 <div className="flex gap-2">
                   <Button 
-                    onClick={startTest} 
+                    onClick={startTest}
+                    disabled={!lastAttemptCorrect}
                     className="bg-cognitive-primary hover:bg-cognitive-primary/80"
                   >
                     Nākamais Līmenis

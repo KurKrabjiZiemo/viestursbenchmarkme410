@@ -14,7 +14,7 @@ import AimTrainer from "@/components/AimTrainer";
 // Tulkojums jo stulbais db
 const translateTestType = (testType: string): string => {
   const translations: Record<string, string> = {
-    'reaction': 'Reakcijas Laiks',
+    'reaction': 'Reakcijas laiks',
     'memory': 'Vizuālā Atmiņa',
     'number_memory': 'Skaitļu Atmiņa',
     'number-memory': 'Skaitļu Atmiņa',
@@ -39,7 +39,16 @@ interface TestResult {
 // Galvenā sākumlapas komponente
 const Index = () => {
   // Saglabā pašreiz aktīvo testu vai paneli
-  const [currentTest, setCurrentTest] = useState<TestType>("dashboard");
+  const [currentTest, setCurrentTest] = useState<TestType>(() => {
+    // Ielādē saglabāto testu no localStorage, ja tas pastāv
+    const saved = localStorage.getItem("currentTest") as TestType | null;
+    return saved || "dashboard";
+  });
+
+  // Saglabā aktīvo testu localStorage kad tas mainās
+  useEffect(() => {
+    localStorage.setItem("currentTest", currentTest);
+  }, [currentTest]);
 
   // Funkcija, kas atgriež pareizo komponentu atkarībā no izvēlētā testa
   const renderCurrentTest = () => {
@@ -103,43 +112,44 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
   const tests = [
     {
       id: "reaction" as TestType,
-      title: "Reakcijas Laiks",
-      description: "Pārbaudi savus refleksus un atbildes ātrumu",
+      title: "Reakcijas laiks",
+      description: "Pārbaudi savus refleksus!",
       icon: Zap,
       gradient: "bg-gradient-primary",
       delay: "0ms"
     },
     {
       id: "memory" as TestType,
-      title: "Vizuālā Atmiņa",
-      description: "Izmēģini savu modeļu atpazīšanas spēju",
+      title: "Vizuālā atmiņa",
+      description: "Mēģini atcerēties lauciņus!",
       icon: Brain,
       gradient: "bg-gradient-accent",
       delay: "150ms"
     },
     {
       id: "number" as TestType,
-      title: "Skaitļu Atmiņa",
-      description: "Atceries un atgūsti skaitļu secības",
+      title: "Skaitļu atmiņa",
+      description: "Atceries skaitļu secību!",
       icon: Hash,
       gradient: "bg-gradient-primary",
       delay: "300ms"
     },
     {
       id: "typing" as TestType,
-      title: "Rakstīšanas Ātrums",
-      description: "Izmēri savus vārdus minūtē",
+      title: "Rakstīšanas ātrums",
+      description: "Pārbaudi savu rakstīšanas ātrumu!",
       icon: Keyboard,
       gradient: "bg-gradient-accent",
       delay: "450ms"
     },
     {
       id: "aim" as TestType,
-      title: "Precizitātes Treniņš",
-      description: "Pārbaudi savu precizitāti un reakciju",
+      title: "Precizitātes treniņš",
+      description: "W.I.P",
       icon: Crosshair,
       gradient: "bg-gradient-primary",
-      delay: "600ms"
+      delay: "600ms",
+      disabled: true
     }
   ];
 
@@ -174,7 +184,7 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
           </h1>
         </div>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Trenē savas kognitīvās spējas ar precīzi izstrādātiem testiem, kas paredzēti, lai mērītu un uzlabotu tavu mentālo sniegumu.
+          Trenē savas kognitīvās spējas ar izstrādātiem testiem, kas paredzēti, lai pārbaudītu tavas spējas!
         </p>
       </header>
 
@@ -185,9 +195,9 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
           return (
             <Card 
               key={test.id}
-              className="group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-cognitive animate-fade-in-up border-border/50 bg-gradient-card"
+              className={`group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-cognitive animate-fade-in-up border-border/50 bg-gradient-card ${test.disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
               style={{ animationDelay: test.delay }}
-              onClick={() => onStartTest(test.id)}
+              onClick={() => !test.disabled && onStartTest(test.id)}
             >
               <CardHeader className="text-center pb-4">
                 <div className={`w-16 h-16 mx-auto mb-4 rounded-full ${test.gradient} flex items-center justify-center group-hover:animate-pulse-glow transition-all duration-300`}>
@@ -202,11 +212,11 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
               </CardHeader>
               <CardContent className="text-center">
                 <Button 
+                  disabled={test.disabled}
                   variant="secondary" 
                   className="w-full group-hover:bg-cognitive-accent group-hover:text-cognitive-accent-foreground transition-all duration-300"
                 >
-                  Sākt!
-                  <Target className="w-4 h-4 ml-2" />
+                  {test.disabled ? "W.I.P" : "Sākt!"}
                 </Button>
               </CardContent>
             </Card>

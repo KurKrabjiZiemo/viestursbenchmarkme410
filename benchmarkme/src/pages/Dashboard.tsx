@@ -33,7 +33,7 @@ interface TestResult {
 
 // Pārskatu panelis - parāda lietotāja testa rezultātus un statistiku
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   // Saglabā visus testa rezultātus un ielādes stāvokli
   const [results, setResults] = useState<TestResult[]>([]);
@@ -41,6 +41,10 @@ const Dashboard = () => {
 
   // Ielādē lietotāja testa rezultātus, kad komponente tiek ielādēta
   useEffect(() => {
+    // Gaida, līdz autentifikācija ir pārbaudīta
+    if (authLoading) {
+      return;
+    }
     // Ja lietotājs nav pieteicies, pārvirza uz autentifikācijas lapu
     if (!user) {
       navigate("/auth");
@@ -138,7 +142,7 @@ const Dashboard = () => {
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <Brain className="w-8 h-8 text-cognitive-primary" />
-            <h1 className="text-4xl font-bold">Sasnieguma panelis</h1>
+            <h1 className="text-4xl font-bold">Rezultātu panelis</h1>
           </div>
           <div className="flex gap-3">
             <Button onClick={() => navigate("/profile")} variant="secondary">
@@ -146,7 +150,7 @@ const Dashboard = () => {
               Profils
             </Button>
             <Button onClick={() => navigate("/")} className="bg-cognitive-primary hover:bg-cognitive-primary/80">
-              Veikt Testus
+              Veikt testus
             </Button>
           </div>
         </div>
@@ -193,8 +197,8 @@ const Dashboard = () => {
         {/* Test Performance Cards */}
         <Card className="bg-gradient-card border-border/50">
           <CardHeader>
-            <CardTitle>Testu sasniegumi</CardTitle>
-            <CardDescription>Seko saviem sasniegumiem dažādos kognitīvajos testos</CardDescription>
+            <CardTitle>Testu rezultāti</CardTitle>
+            <CardDescription>Seko saviem rezultātiem dažādos testos!</CardDescription>
           </CardHeader>
           <CardContent>
             {stats.length === 0 ? (
