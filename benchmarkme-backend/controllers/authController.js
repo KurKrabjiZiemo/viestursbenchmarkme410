@@ -45,7 +45,7 @@ const signUp = async (req, res) => {
 
     res.status(201).json({
       message: 'Konts izveidots veiksmīgi!',
-      user: { id: user.id, email: user.email },
+      user: { id: user.id, email: user.email, created_at: user.created_at },
       token
     });
 

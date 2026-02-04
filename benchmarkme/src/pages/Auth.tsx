@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // Importē autentifikācijas hook
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 // Autentifikācijas lapa - pieteikšanās un reģistrācija
 const Auth = () => {
@@ -20,6 +21,13 @@ const Auth = () => {
   // Iegūst autentifikācijas funkcijas un lietotāja stāvokli
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  // Funkcija, kas pārbauda vai e-pasts ir derīgs
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   // Ja lietotājs jau ir pieteicies, pārvirza uz sākumlapu
   useEffect(() => {
@@ -39,6 +47,17 @@ const Auth = () => {
   // Apstrādā reģistrācijas formas iesniegšanu
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Pārbauda vai e-pasts ir derīgs pirms reģistrācijas
+    if (!isValidEmail(email)) {
+      toast({
+        title: "Nederīgs E-pasts",
+        description: "Lūdzu ievadiet derīgu e-pasta adresi (piemēram, tavs@epasts.lv)",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsLoading(true);
     await signUp(email, password);
     setIsLoading(false);
@@ -105,7 +124,7 @@ const Auth = () => {
                   <Label htmlFor="signup-email">E-pasts</Label>
                   <Input
                     id="signup-email"
-                    type="email"
+                    type="text"
                     placeholder="tavs@epasts.lv"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
