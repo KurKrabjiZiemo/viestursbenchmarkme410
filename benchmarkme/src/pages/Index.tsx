@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Brain, Zap, Target, Timer, TrendingUp, Hash, Keyboard, Crosshair, User, BarChart3 } from "lucide-react";
+import { Brain, Zap, Target, Timer, TrendingUp, Hash, Keyboard, Crosshair, User, BarChart3, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,22 +10,24 @@ import MemoryTest from "@/components/MemoryTest";
 import NumberMemoryTest from "@/components/NumberMemoryTest";
 import TypingTest from "@/components/TypingTest";
 import AimTrainer from "@/components/AimTrainer";
+import StroopTest from "@/components/StroopTest";
 
 // Tulkojums jo stulbais db
 const translateTestType = (testType: string): string => {
   const translations: Record<string, string> = {
     'reaction': 'Reakcijas laiks',
-    'memory': 'Vizuālā Atmiņa',
-    'number_memory': 'Skaitļu Atmiņa',
-    'number-memory': 'Skaitļu Atmiņa',
-    'typing': 'Rakstīšanas Ātrums',
-    'aim': 'Precizitātes Treniņš'
+    'memory': 'Vizuālā atmiņa',
+    'number_memory': 'Skaitļu atmiņa',
+    'number-memory': 'Skaitļu atmiņa',
+    'typing': 'Rakstīšanas ātrums',
+    'aim': 'Precizitātes treniņš',
+    'stroop': 'Krāsu-vārdu tests'
   };
   return translations[testType] || testType.replace(/_/g, ' ');
 };
 
 // Definē visus iespējamos testu veidus
-type TestType = "dashboard" | "reaction" | "memory" | "number" | "typing" | "aim";
+type TestType = "dashboard" | "reaction" | "memory" | "number" | "typing" | "aim" | "stroop";
 
 // Testa rezultāta datu struktūra
 interface TestResult {
@@ -63,6 +65,8 @@ const Index = () => {
         return <TypingTest onBack={() => setCurrentTest("dashboard")} />;
       case "aim":
         return <AimTrainer onBack={() => setCurrentTest("dashboard")} />;
+      case "stroop":
+        return <StroopTest onBack={() => setCurrentTest("dashboard")} />;
       default:
         return <Dashboard onStartTest={setCurrentTest} />;
     }
@@ -150,6 +154,14 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
       gradient: "bg-gradient-primary",
       delay: "600ms",
       disabled: true
+    },
+    {
+      id: "stroop" as TestType,
+      title: "Stroop krāsu-vārdu tests",
+      description: "Nosaki krāsu, nevis vārdu!",
+      icon: Palette,
+      gradient: "bg-gradient-accent",
+      delay: "750ms"
     }
   ];
 

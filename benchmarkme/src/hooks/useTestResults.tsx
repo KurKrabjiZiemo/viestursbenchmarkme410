@@ -14,6 +14,10 @@ interface TestMetadata {
   hits?: number;
   misses?: number;
   average_hit_time?: number;
+  averageTimeMs?: number;
+  totalTrials?: number;
+  correct?: number;
+  incorrect?: number;
   [key: string]: string | number | boolean | number[] | undefined;
 }
 
@@ -28,7 +32,8 @@ const TEST_ENDPOINTS: Record<string, string> = {
   'memory': '/test-results/memory',
   'number_memory': '/test-results/number-memory',
   'typing': '/test-results/typing',
-  'aim': '/test-results/aim'
+  'aim': '/test-results/aim',
+  'stroop': '/test-results/stroop'
 };
 
 // Custom hook testa rezultātu saglabāšanai datubāzē

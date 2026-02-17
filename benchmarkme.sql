@@ -40,6 +40,24 @@ CREATE TABLE IF NOT EXISTS `aim_results` (
 
 -- Dumping data for table benchmarkme.aim_results: ~0 rows (approximately)
 
+-- Dumping structure for table benchmarkme.stroop_results
+CREATE TABLE IF NOT EXISTS `stroop_results` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `total_trials` int(11) NOT NULL,
+  `correct_count` int(11) NOT NULL,
+  `incorrect_count` int(11) NOT NULL,
+  `accuracy_percent` decimal(5,2) DEFAULT NULL,
+  `average_time_ms` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_user_stroop` (`user_id`),
+  KEY `idx_stroop_accuracy` (`accuracy_percent`),
+  CONSTRAINT `stroop_results_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Dumping data for table benchmarkme.stroop_results: ~0 rows (approximately)
+
 -- Dumping structure for table benchmarkme.memory_results
 CREATE TABLE IF NOT EXISTS `memory_results` (
   `id` int NOT NULL AUTO_INCREMENT,

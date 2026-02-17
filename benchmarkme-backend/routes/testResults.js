@@ -7,6 +7,7 @@ const {
   saveNumberMemoryResult,
   saveTypingResult,
   saveAimResult,
+  saveStroopResult,
   getTestResults,
   getAllResults
 } = require('../controllers/testResultsController');
@@ -20,6 +21,7 @@ router.post('/memory', saveMemoryResult);
 router.post('/number-memory', saveNumberMemoryResult);
 router.post('/typing', saveTypingResult);
 router.post('/aim', saveAimResult);
+router.post('/stroop', saveStroopResult);
 
 // Iegūt rezultātus
 router.get('/all', getAllResults);

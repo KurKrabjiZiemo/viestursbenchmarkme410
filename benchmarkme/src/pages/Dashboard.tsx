@@ -17,7 +17,8 @@ const translateTestType = (testType: string): string => {
     'number_memory': 'Skaitļu Atmiņa',
     'number-memory': 'Skaitļu Atmiņa',
     'typing': 'Rakstīšanas Ātrums',
-    'aim': 'Precizitātes Treniņš'
+    'aim': 'Precizitātes Treniņš',
+    'stroop': 'Stroop Krāsu-Vārdu Tests'
   };
   return translations[testType] || testType.replace(/_/g, ' ');
 };
