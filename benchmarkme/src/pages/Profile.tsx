@@ -11,9 +11,11 @@ import { apiRequest } from "@/lib/api";
 
 // Profila datu interfeiss
 interface Profile {
+  id: number;
+  email: string;
   username: string | null;
-  full_name: string | null;
-  avatar_url: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 // Profila lapa - rāda lietotāja informāciju
@@ -39,15 +41,15 @@ const Profile = () => {
 
     // Iegūst profila datus no datubāzes
     const fetchProfile = async () => {
-  try {
-    const data = await apiRequest<Profile | null>('/users');
-    setProfile(data);
-  } catch (error: unknown) {
-    console.error('Error fetching profile:', error);
-  } finally {
-    setLoading(false);
-  }
-};
+      try {
+        const data = await apiRequest<{ profile: Profile }>('/profiles');
+        setProfile(data.profile);
+      } catch (error: unknown) {
+        console.error('Error fetching profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
     fetchProfile();
   }, [user, navigate]);
@@ -108,19 +110,10 @@ const Profile = () => {
                 <p className="text-lg">{user?.email}</p>
               </div>
               
-              {profile?.full_name && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Pilns Vārds</label>
-                  <p className="text-lg">{profile.full_name}</p>
-                </div>
-              )}
-
-              {profile?.username && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Lietotājvārds</label>
-                  <p className="text-lg">{profile.username}</p>
-                </div>
-              )}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Lietotājvārds</label>
+                <p className="text-lg">{profile?.username || user?.username || 'Nav iestatīts'}</p>
+              </div>
 
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Konts Izveidots</label>

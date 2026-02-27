@@ -1,9 +1,37 @@
 const pool = require('../config/database');
 
+const getValidatedUserId = (req) => {
+  const rawUserId = req?.user?.id;
+  const numericUserId = Number(rawUserId);
+
+  if (!Number.isInteger(numericUserId) || numericUserId <= 0) {
+    return null;
+  }
+
+  return numericUserId;
+};
+
+const runResultsQuerySafely = async (query, params, contextLabel) => {
+  try {
+    const [rows] = await pool.query(query, params);
+    return rows;
+  } catch (error) {
+    if (error?.code === 'ER_NO_SUCH_TABLE') {
+      console.warn(`Trūkst tabula rezultātu pieprasījumam (${contextLabel}):`, error.sqlMessage);
+      return [];
+    }
+
+    throw error;
+  }
+};
+
 // ============ REAKCIJAS TESTS ============
 const saveReactionResult = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = getValidatedUserId(req);
+    if (!userId) {
+      return res.status(401).json({ error: 'Nederīga autorizācija. Pieslēdzies vēlreiz.' });
+    }
     const { score, metadata } = req.body;
 
     // Adapt to current schema: store one row per attempt
@@ -29,7 +57,10 @@ const saveReactionResult = async (req, res) => {
 // ============ VIZUĀLĀS ATMIŅAS TESTS ============
 const saveMemoryResult = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = getValidatedUserId(req);
+    if (!userId) {
+      return res.status(401).json({ error: 'Nederīga autorizācija. Pieslēdzies vēlreiz.' });
+    }
     const { score, metadata } = req.body;
 
     // Adapt to current memory_results schema
@@ -56,7 +87,10 @@ const saveMemoryResult = async (req, res) => {
 // ============ SKAITĻU ATMIŅAS TESTS ============
 const saveNumberMemoryResult = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = getValidatedUserId(req);
+    if (!userId) {
+      return res.status(401).json({ error: 'Nederīga autorizācija. Pieslēdzies vēlreiz.' });
+    }
     const { score, metadata } = req.body;
 
     // Adapt to current number_memory_results schema
@@ -83,7 +117,10 @@ const saveNumberMemoryResult = async (req, res) => {
 // ============ RAKSTĪŠANAS TESTS ============
 const saveTypingResult = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = getValidatedUserId(req);
+    if (!userId) {
+      return res.status(401).json({ error: 'Nederīga autorizācija. Pieslēdzies vēlreiz.' });
+    }
     const { score, metadata } = req.body;
 
     // Adapt to typing_results schema
@@ -112,7 +149,10 @@ const saveTypingResult = async (req, res) => {
 // ============ PRECIZITĀTES TESTS ============
 const saveAimResult = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = getValidatedUserId(req);
+    if (!userId) {
+      return res.status(401).json({ error: 'Nederīga autorizācija. Pieslēdzies vēlreiz.' });
+    }
     const { score, metadata } = req.body;
 
     // Map to current aim_results schema
@@ -139,10 +179,45 @@ const saveAimResult = async (req, res) => {
   }
 };
 
+// ============ STROOP TESTS ============
+const saveStroopResult = async (req, res) => {
+  try {
+    const userId = getValidatedUserId(req);
+    if (!userId) {
+      return res.status(401).json({ error: 'Nederīga autorizācija. Pieslēdzies vēlreiz.' });
+    }
+    const { score, metadata } = req.body;
+
+    const totalTrials = metadata?.totalTrials ?? metadata?.total ?? score ?? 0;
+    const correctCount = metadata?.correct ?? score ?? 0;
+    const incorrectCount = metadata?.incorrect ?? Math.max(totalTrials - correctCount, 0);
+    const accuracy = metadata?.accuracy ?? (totalTrials > 0 ? Math.round((correctCount / totalTrials) * 100) : 0);
+    const averageTimeMs = metadata?.averageTimeMs ?? metadata?.avgReactionTime ?? null;
+
+    await pool.query(
+      `INSERT INTO stroop_results 
+       (user_id, total_trials, correct_count, incorrect_count, accuracy_percent, average_time_ms) 
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [userId, totalTrials, correctCount, incorrectCount, accuracy, averageTimeMs]
+    );
+
+    res.status(201).json({ message: 'Stroop rezultāts saglabāts!' });
+  } catch (error) {
+    if (error?.code === 'ER_NO_SUCH_TABLE') {
+      return res.status(503).json({ error: 'Stroop tabula nav atrasta datubāzē. Importē jaunāko benchmarkme.sql.' });
+    }
+    console.error('Kļūda saglabājot Stroop rezultātu:', error);
+    res.status(500).json({ error: 'Servera kļūda' });
+  }
+};
+
 // ============ IEGŪT REZULTĀTUS ============
 const getTestResults = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = getValidatedUserId(req);
+    if (!userId) {
+      return res.status(401).json({ error: 'Nederīga autorizācija. Pieslēdzies vēlreiz.' });
+    }
     const { testType } = req.params;
 
     const tableMap = {
@@ -150,7 +225,8 @@ const getTestResults = async (req, res) => {
       'memory': 'memory_results',
       'number-memory': 'number_memory_results',
       'typing': 'typing_results',
-      'aim': 'aim_results'
+      'aim': 'aim_results',
+      'stroop': 'stroop_results'
     };
 
     const tableName = tableMap[testType];
@@ -159,9 +235,10 @@ const getTestResults = async (req, res) => {
       return res.status(400).json({ error: 'Nezināms testa tips' });
     }
 
-    const [results] = await pool.query(
+    const results = await runResultsQuerySafely(
       `SELECT * FROM ${tableName} WHERE user_id = ? ORDER BY created_at DESC LIMIT 50`,
-      [userId]
+      [userId],
+      `getTestResults:${testType}`
     );
 
     res.json({ results });
@@ -174,36 +251,94 @@ const getTestResults = async (req, res) => {
 // Iegūt visus rezultātus (priekš dashboard)
 const getAllResults = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = getValidatedUserId(req);
+    if (!userId) {
+      return res.status(401).json({ error: 'Nederīga autorizācija. Pieslēdzies vēlreiz.' });
+    }
 
-    const [reaction] = await pool.query(
-      `SELECT id, user_id, reaction_time_ms as score, 'reaction' as test_type, created_at FROM reaction_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
-      [userId]
-    );
-    const [memory] = await pool.query(
-      `SELECT id, user_id, total_correct as score, 'memory' as test_type, created_at FROM memory_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
-      [userId]
-    );
-    const [numberMemory] = await pool.query(
-      `SELECT id, user_id, correct_answers as score, 'number_memory' as test_type, created_at FROM number_memory_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
-      [userId]
-    );
-    const [typing] = await pool.query(
-      `SELECT id, user_id, wpm as score, 'typing' as test_type, created_at FROM typing_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
-      [userId]
-    );
-    const [aim] = await pool.query(
-      `SELECT id, user_id, accuracy_percent as score, 'aim' as test_type, created_at FROM aim_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
-      [userId]
-    );
+    const [reaction, memory, numberMemory, typing, aim, stroop] = await Promise.all([
+      runResultsQuerySafely(
+        `SELECT id, user_id, reaction_time_ms as score, 'reaction' as test_type, created_at FROM reaction_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
+        [userId],
+        'getAllResults:reaction'
+      ),
+      runResultsQuerySafely(
+        `SELECT id, user_id, total_correct as score, 'memory' as test_type, created_at FROM memory_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
+        [userId],
+        'getAllResults:memory'
+      ),
+      runResultsQuerySafely(
+        `SELECT id, user_id, correct_answers as score, 'number_memory' as test_type, created_at FROM number_memory_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
+        [userId],
+        'getAllResults:number_memory'
+      ),
+      runResultsQuerySafely(
+        `SELECT id, user_id, wpm as score, 'typing' as test_type, created_at FROM typing_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
+        [userId],
+        'getAllResults:typing'
+      ),
+      runResultsQuerySafely(
+        `SELECT id, user_id, accuracy_percent as score, 'aim' as test_type, created_at FROM aim_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
+        [userId],
+        'getAllResults:aim'
+      ),
+      runResultsQuerySafely(
+        `SELECT id, user_id, correct_count as score, 'stroop' as test_type, created_at FROM stroop_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
+        [userId],
+        'getAllResults:stroop'
+      )
+    ]);
 
     // Combine all results into a single flat array
-    const allResults = [...reaction, ...memory, ...numberMemory, ...typing, ...aim]
+    const allResults = [...reaction, ...memory, ...numberMemory, ...typing, ...aim, ...stroop]
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     res.json(allResults);
   } catch (error) {
     console.error('Kļūda iegūstot visus rezultātus:', error);
+    res.status(500).json({ error: 'Servera kļūda' });
+  }
+};
+
+// Iegūt publiskos jaunākos rezultātus ar lietotājvārdiem (leaderboard bloks)
+const getRecentResults = async (req, res) => {
+  try {
+    const requestedLimit = Number(req.query?.limit);
+    const limit = Number.isInteger(requestedLimit)
+      ? Math.min(Math.max(requestedLimit, 1), 100)
+      : 20;
+
+    const rows = await runResultsQuerySafely(
+      `SELECT
+        recent.id,
+        recent.user_id,
+        recent.test_type,
+        recent.score,
+        recent.created_at,
+        COALESCE(NULLIF(u.username, ''), CONCAT('user', u.id)) AS username
+      FROM (
+        SELECT id, user_id, 'reaction' AS test_type, reaction_time_ms AS score, created_at FROM reaction_results
+        UNION ALL
+        SELECT id, user_id, 'memory' AS test_type, total_correct AS score, created_at FROM memory_results
+        UNION ALL
+        SELECT id, user_id, 'number_memory' AS test_type, correct_answers AS score, created_at FROM number_memory_results
+        UNION ALL
+        SELECT id, user_id, 'typing' AS test_type, wpm AS score, created_at FROM typing_results
+        UNION ALL
+        SELECT id, user_id, 'aim' AS test_type, accuracy_percent AS score, created_at FROM aim_results
+        UNION ALL
+        SELECT id, user_id, 'stroop' AS test_type, correct_count AS score, created_at FROM stroop_results
+      ) AS recent
+      INNER JOIN users u ON u.id = recent.user_id
+      ORDER BY recent.created_at DESC
+      LIMIT ?`,
+      [limit],
+      'getRecentResults'
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error('Kļūda iegūstot publiskos rezultātus:', error);
     res.status(500).json({ error: 'Servera kļūda' });
   }
 };
@@ -214,6 +349,8 @@ module.exports = {
   saveNumberMemoryResult,
   saveTypingResult,
   saveAimResult,
+  saveStroopResult,
   getTestResults,
-  getAllResults
+  getAllResults,
+  getRecentResults
 };
