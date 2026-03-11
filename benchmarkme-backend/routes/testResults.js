@@ -10,11 +10,13 @@ const {
   saveStroopResult,
   getTestResults,
   getAllResults,
-  getRecentResults
+  getRecentResults,
+  getLeaderboard
 } = require('../controllers/testResultsController');
 
 // Publisks leaderboard feed
 router.get('/recent', getRecentResults);
+router.get('/leaderboard', getLeaderboard);
 
 // Visi maršruti ir aizsargāti
 router.use(authenticateToken);

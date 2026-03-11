@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Brain, Zap, Target, Timer, TrendingUp, Hash, Keyboard, Crosshair, User, BarChart3, Palette } from "lucide-react";
+import { Brain, Zap, Target, Timer, TrendingUp, Hash, Keyboard, Crosshair, User, BarChart3, Palette, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/api";
 import ReactionTest from "@/components/ReactionTest";
@@ -35,6 +36,23 @@ interface TestResult {
   test_type: string;
   score: number;
   metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+type LeaderboardTestType = "reaction" | "memory" | "number_memory" | "typing" | "aim" | "stroop";
+
+interface LeaderboardRow {
+  user_id: number;
+  username: string;
+  best_score: number;
+  last_played_at: string;
+}
+
+interface RecentResultRow {
+  user_id: number;
+  username: string;
+  test_type: string;
+  score: number;
   created_at: string;
 }
 
@@ -83,6 +101,9 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
   const { user } = useAuth();
   const navigate = useNavigate();
   const [results, setResults] = useState<TestResult[]>([]);
+  const [selectedLeaderboardTest, setSelectedLeaderboardTest] = useState<LeaderboardTestType>("reaction");
+  const [leaderboardRows, setLeaderboardRows] = useState<LeaderboardRow[]>([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(true);
 
   // Ielādē lietotāja jaunākos testa rezultātus
   useEffect(() => {
@@ -112,6 +133,97 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
 
     return () => clearInterval(intervalId);
   }, [user]);
+
+  useEffect(() => {
+    const buildLeaderboardFromRecent = (items: RecentResultRow[]): LeaderboardRow[] => {
+      const filtered = items.filter((item) => item.test_type === selectedLeaderboardTest);
+      const byUser = new Map<number, LeaderboardRow>();
+
+      filtered.forEach((item) => {
+        const current = byUser.get(item.user_id);
+        if (!current) {
+          byUser.set(item.user_id, {
+            user_id: item.user_id,
+            username: item.username,
+            best_score: Number(item.score),
+            last_played_at: item.created_at
+          });
+          return;
+        }
+
+        const betterScore = selectedLeaderboardTest === 'reaction'
+          ? Number(item.score) < current.best_score
+          : Number(item.score) > current.best_score;
+
+        if (betterScore) {
+          current.best_score = Number(item.score);
+        }
+
+        if (new Date(item.created_at) > new Date(current.last_played_at)) {
+          current.last_played_at = item.created_at;
+        }
+      });
+
+      const sortDirection = selectedLeaderboardTest === 'reaction' ? 1 : -1;
+      return Array.from(byUser.values())
+        .sort((a, b) => {
+          if (a.best_score === b.best_score) {
+            return new Date(b.last_played_at).getTime() - new Date(a.last_played_at).getTime();
+          }
+          return (a.best_score - b.best_score) * sortDirection;
+        })
+        .slice(0, 10);
+    };
+
+    const fetchLeaderboard = async () => {
+      try {
+        setLeaderboardLoading(true);
+        const data = await apiRequest<{ results: LeaderboardRow[] }>(
+          `/test-results/leaderboard?testType=${selectedLeaderboardTest}&limit=10`
+        );
+        setLeaderboardRows(data.results);
+      } catch (error: unknown) {
+        try {
+          // Fallback for older backend instances that do not yet expose /leaderboard
+          const recent = await apiRequest<RecentResultRow[]>(`/test-results/recent?limit=200`);
+          const derivedRows = buildLeaderboardFromRecent(recent);
+          setLeaderboardRows(derivedRows);
+        } catch (fallbackError: unknown) {
+          if (fallbackError instanceof Error) {
+            console.error('Kļūda ielādējot leaderboard:', fallbackError.message);
+          }
+          setLeaderboardRows([]);
+        }
+      } finally {
+        setLeaderboardLoading(false);
+      }
+    };
+
+    fetchLeaderboard();
+
+    const intervalId = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchLeaderboard();
+      }
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [selectedLeaderboardTest]);
+
+  const formatLeaderboardScore = (testType: LeaderboardTestType, score: number): string => {
+    if (testType === 'reaction') return `${Math.round(score)} ms`;
+    if (testType === 'aim') return `${Number(score).toFixed(1)}%`;
+    return `${Math.round(score)}`;
+  };
+
+  const leaderboardTestOptions: Array<{ value: LeaderboardTestType; label: string }> = [
+    { value: 'typing', label: 'Rakstīšanas ātrums' },
+    { value: 'reaction', label: 'Reakcijas laiks' },
+    { value: 'memory', label: 'Vizuālā atmiņa' },
+    { value: 'number_memory', label: 'Skaitļu atmiņa' },
+    { value: 'aim', label: 'Precizitātes treniņš' },
+    { value: 'stroop', label: 'Stroop tests' }
+  ];
 
   const tests = [
     {
@@ -167,6 +279,62 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <aside className="hidden xl:block fixed right-6 top-24 w-[320px] z-20">
+        <Card className="bg-gradient-card border-border/50 animate-fade-in-up">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-cognitive-accent" />
+              Leaderboard
+            </CardTitle>
+            <CardDescription>Labākie rezultāti pēc testa tipa</CardDescription>
+            <Select value={selectedLeaderboardTest} onValueChange={(value) => setSelectedLeaderboardTest(value as LeaderboardTestType)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Izvēlies testu" />
+              </SelectTrigger>
+              <SelectContent>
+                {leaderboardTestOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardHeader>
+          <CardContent>
+            {leaderboardLoading ? (
+              <p className="text-sm text-muted-foreground">Ielādē leaderboard...</p>
+            ) : leaderboardRows.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Vēl nav rezultātu šim testam.</p>
+            ) : (
+              <div className="space-y-2">
+                {leaderboardRows.map((row, index) => {
+                  const isCurrentUser = user?.id === row.user_id;
+                  return (
+                    <div
+                      key={`${row.user_id}-${index}`}
+                      className={`p-3 rounded-lg border ${isCurrentUser ? 'bg-cognitive-primary/10 border-cognitive-primary/40' : 'bg-muted/20 border-border/30'}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold leading-tight">
+                            #{index + 1} {row.username}
+                            {isCurrentUser ? ' (Tu)' : ''}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(row.last_played_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <p className="text-lg font-bold text-cognitive-primary">
+                          {formatLeaderboardScore(selectedLeaderboardTest, row.best_score)}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </aside>
+
       {/* Header with Auth Buttons */}
       <header className="text-center mb-12 animate-fade-in-up">
         <div className="flex justify-end gap-3 mb-6">
@@ -266,6 +434,62 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
           </CardContent>
         </Card>
       )}
+
+      <aside className="xl:hidden mt-8 max-w-2xl mx-auto">
+        <Card className="bg-gradient-card border-border/50 animate-fade-in-up">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-cognitive-accent" />
+              Leaderboard
+            </CardTitle>
+            <CardDescription>Labākie rezultāti pēc testa tipa</CardDescription>
+            <Select value={selectedLeaderboardTest} onValueChange={(value) => setSelectedLeaderboardTest(value as LeaderboardTestType)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Izvēlies testu" />
+              </SelectTrigger>
+              <SelectContent>
+                {leaderboardTestOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardHeader>
+          <CardContent>
+            {leaderboardLoading ? (
+              <p className="text-sm text-muted-foreground">Ielādē leaderboard...</p>
+            ) : leaderboardRows.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Vēl nav rezultātu šim testam.</p>
+            ) : (
+              <div className="space-y-2">
+                {leaderboardRows.map((row, index) => {
+                  const isCurrentUser = user?.id === row.user_id;
+                  return (
+                    <div
+                      key={`${row.user_id}-${index}`}
+                      className={`p-3 rounded-lg border ${isCurrentUser ? 'bg-cognitive-primary/10 border-cognitive-primary/40' : 'bg-muted/20 border-border/30'}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold leading-tight">
+                            #{index + 1} {row.username}
+                            {isCurrentUser ? ' (Tu)' : ''}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(row.last_played_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <p className="text-lg font-bold text-cognitive-primary">
+                          {formatLeaderboardScore(selectedLeaderboardTest, row.best_score)}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </aside>
     </div>
   );
 };

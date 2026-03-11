@@ -52,7 +52,7 @@ const Profile = () => {
     };
 
     fetchProfile();
-  }, [user, navigate]);
+  }, [authLoading, user, navigate]);
 
   // Apstrādā izrakstīšanos
   const handleSignOut = async () => {

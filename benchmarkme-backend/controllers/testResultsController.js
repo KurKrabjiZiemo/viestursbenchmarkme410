@@ -343,6 +343,75 @@ const getRecentResults = async (req, res) => {
   }
 };
 
+// Iegūt leaderboard ar labāko rezultātu katram lietotājam izvēlētajā testā
+const getLeaderboard = async (req, res) => {
+  try {
+    const testType = String(req.query?.testType || 'typing');
+    const requestedLimit = Number(req.query?.limit);
+    const limit = Number.isInteger(requestedLimit)
+      ? Math.min(Math.max(requestedLimit, 1), 100)
+      : 10;
+
+    const leaderboardMap = {
+      reaction: {
+        table: 'reaction_results',
+        scoreExpr: 'MIN(r.reaction_time_ms)',
+        sortDirection: 'ASC'
+      },
+      memory: {
+        table: 'memory_results',
+        scoreExpr: 'MAX(r.total_correct)',
+        sortDirection: 'DESC'
+      },
+      number_memory: {
+        table: 'number_memory_results',
+        scoreExpr: 'MAX(r.correct_answers)',
+        sortDirection: 'DESC'
+      },
+      typing: {
+        table: 'typing_results',
+        scoreExpr: 'MAX(r.wpm)',
+        sortDirection: 'DESC'
+      },
+      aim: {
+        table: 'aim_results',
+        scoreExpr: 'MAX(r.accuracy_percent)',
+        sortDirection: 'DESC'
+      },
+      stroop: {
+        table: 'stroop_results',
+        scoreExpr: 'MAX(r.correct_count)',
+        sortDirection: 'DESC'
+      }
+    };
+
+    const selected = leaderboardMap[testType];
+    if (!selected) {
+      return res.status(400).json({ error: 'Nezināms leaderboard testa tips' });
+    }
+
+    const rows = await runResultsQuerySafely(
+      `SELECT
+        u.id AS user_id,
+        COALESCE(NULLIF(u.username, ''), CONCAT('user', u.id)) AS username,
+        ${selected.scoreExpr} AS best_score,
+        MAX(r.created_at) AS last_played_at
+      FROM ${selected.table} r
+      INNER JOIN users u ON u.id = r.user_id
+      GROUP BY u.id, u.username
+      ORDER BY best_score ${selected.sortDirection}, last_played_at DESC
+      LIMIT ?`,
+      [limit],
+      `getLeaderboard:${testType}`
+    );
+
+    res.json({ testType, limit, results: rows });
+  } catch (error) {
+    console.error('Kļūda iegūstot leaderboard:', error);
+    res.status(500).json({ error: 'Servera kļūda' });
+  }
+};
+
 module.exports = {
   saveReactionResult,
   saveMemoryResult,
@@ -352,5 +421,6 @@ module.exports = {
   saveStroopResult,
   getTestResults,
   getAllResults,
-  getRecentResults
+  getRecentResults,
+  getLeaderboard
 };
