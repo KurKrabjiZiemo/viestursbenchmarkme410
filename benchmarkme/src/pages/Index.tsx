@@ -46,6 +46,12 @@ interface LeaderboardRow {
   username: string;
   best_score: number;
   last_played_at: string;
+  attempts_count?: number | null;
+  level_reached?: number | null;
+  accuracy_percent?: number | null;
+  points?: number | null;
+  average_time_ms?: number | null;
+  digits_remembered?: number | null;
 }
 
 interface RecentResultRow {
@@ -216,6 +222,36 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
     return `${Math.round(score)}`;
   };
 
+  const getLeaderboardDetails = (testType: LeaderboardTestType, row: LeaderboardRow): string[] => {
+    const details: string[] = [];
+
+    if (row.level_reached != null) {
+      details.push(`Level: ${row.level_reached}`);
+    }
+
+    if (row.accuracy_percent != null) {
+      details.push(`Precizitāte: ${Number(row.accuracy_percent).toFixed(1)}%`);
+    }
+
+    if (row.points != null && testType !== 'reaction') {
+      details.push(`Punkti: ${Math.round(Number(row.points))}`);
+    }
+
+    if (row.digits_remembered != null) {
+      details.push(`Cipari: ${Math.round(Number(row.digits_remembered))}`);
+    }
+
+    if (row.average_time_ms != null && (testType === 'reaction' || testType === 'aim' || testType === 'stroop')) {
+      details.push(`Vid. laiks: ${Math.round(Number(row.average_time_ms))} ms`);
+    }
+
+    if (row.attempts_count != null) {
+      details.push(`Mēģinājumi: ${Math.round(Number(row.attempts_count))}`);
+    }
+
+    return details.slice(0, 3);
+  };
+
   const leaderboardTestOptions: Array<{ value: LeaderboardTestType; label: string }> = [
     { value: 'typing', label: 'Rakstīšanas ātrums' },
     { value: 'reaction', label: 'Reakcijas laiks' },
@@ -279,7 +315,7 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <aside className="hidden xl:block fixed right-6 top-24 w-[320px] z-20">
+      <aside className="hidden xl:block fixed right-5 top-24 w-[380px] z-20">
         <Card className="bg-gradient-card border-border/50 animate-fade-in-up">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -304,25 +340,38 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
             ) : leaderboardRows.length === 0 ? (
               <p className="text-sm text-muted-foreground">Vēl nav rezultātu šim testam.</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2.5 max-h-[68vh] overflow-y-auto pr-1">
                 {leaderboardRows.map((row, index) => {
                   const isCurrentUser = user?.id === row.user_id;
+                  const details = getLeaderboardDetails(selectedLeaderboardTest, row);
                   return (
                     <div
                       key={`${row.user_id}-${index}`}
-                      className={`p-3 rounded-lg border ${isCurrentUser ? 'bg-cognitive-primary/10 border-cognitive-primary/40' : 'bg-muted/20 border-border/30'}`}
+                      className={`p-2.5 rounded-lg border ${isCurrentUser ? 'bg-cognitive-primary/10 border-cognitive-primary/40' : 'bg-muted/20 border-border/30'}`}
                     >
                       <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-semibold leading-tight">
+                        <div className="min-w-0 pr-2">
+                          <p className="font-semibold text-sm leading-tight truncate">
                             #{index + 1} {row.username}
                             {isCurrentUser ? ' (Tu)' : ''}
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-muted-foreground mt-0.5">
                             {new Date(row.last_played_at).toLocaleDateString()}
                           </p>
+                          {details.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              {details.slice(0, 2).map((detail) => (
+                                <span
+                                  key={`${row.user_id}-${detail}`}
+                                  className="px-1.5 py-0.5 rounded-md bg-muted/40 text-[11px] text-foreground/90"
+                                >
+                                  {detail}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                        <p className="text-lg font-bold text-cognitive-primary">
+                        <p className="text-xl font-bold text-cognitive-primary ml-2 shrink-0">
                           {formatLeaderboardScore(selectedLeaderboardTest, row.best_score)}
                         </p>
                       </div>
@@ -460,25 +509,38 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
             ) : leaderboardRows.length === 0 ? (
               <p className="text-sm text-muted-foreground">Vēl nav rezultātu šim testam.</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {leaderboardRows.map((row, index) => {
                   const isCurrentUser = user?.id === row.user_id;
+                  const details = getLeaderboardDetails(selectedLeaderboardTest, row);
                   return (
                     <div
                       key={`${row.user_id}-${index}`}
-                      className={`p-3 rounded-lg border ${isCurrentUser ? 'bg-cognitive-primary/10 border-cognitive-primary/40' : 'bg-muted/20 border-border/30'}`}
+                      className={`p-2.5 rounded-lg border ${isCurrentUser ? 'bg-cognitive-primary/10 border-cognitive-primary/40' : 'bg-muted/20 border-border/30'}`}
                     >
                       <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-semibold leading-tight">
+                        <div className="min-w-0 pr-2">
+                          <p className="font-semibold text-sm leading-tight truncate">
                             #{index + 1} {row.username}
                             {isCurrentUser ? ' (Tu)' : ''}
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-muted-foreground mt-0.5">
                             {new Date(row.last_played_at).toLocaleDateString()}
                           </p>
+                          {details.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              {details.slice(0, 2).map((detail) => (
+                                <span
+                                  key={`${row.user_id}-${detail}`}
+                                  className="px-1.5 py-0.5 rounded-md bg-muted/40 text-[11px] text-foreground/90"
+                                >
+                                  {detail}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                        <p className="text-lg font-bold text-cognitive-primary">
+                        <p className="text-xl font-bold text-cognitive-primary ml-2 shrink-0">
                           {formatLeaderboardScore(selectedLeaderboardTest, row.best_score)}
                         </p>
                       </div>

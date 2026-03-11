@@ -354,34 +354,112 @@ const getLeaderboard = async (req, res) => {
 
     const leaderboardMap = {
       reaction: {
-        table: 'reaction_results',
-        scoreExpr: 'MIN(r.reaction_time_ms)',
-        sortDirection: 'ASC'
+        query: `SELECT
+          u.id AS user_id,
+          COALESCE(NULLIF(u.username, ''), CONCAT('user', u.id)) AS username,
+          MIN(r.reaction_time_ms) AS best_score,
+          MAX(r.created_at) AS last_played_at,
+          COUNT(*) AS attempts_count,
+          NULL AS level_reached,
+          NULL AS accuracy_percent,
+          NULL AS points,
+          ROUND(AVG(r.reaction_time_ms), 0) AS average_time_ms,
+          NULL AS digits_remembered
+        FROM reaction_results r
+        INNER JOIN users u ON u.id = r.user_id
+        GROUP BY u.id, u.username
+        ORDER BY best_score ASC, last_played_at DESC
+        LIMIT ?`
       },
       memory: {
-        table: 'memory_results',
-        scoreExpr: 'MAX(r.total_correct)',
-        sortDirection: 'DESC'
+        query: `SELECT
+          u.id AS user_id,
+          COALESCE(NULLIF(u.username, ''), CONCAT('user', u.id)) AS username,
+          MAX(r.total_correct) AS best_score,
+          MAX(r.created_at) AS last_played_at,
+          COUNT(*) AS attempts_count,
+          MAX(r.level_reached) AS level_reached,
+          MAX(r.accuracy_percent) AS accuracy_percent,
+          MAX(r.total_correct) AS points,
+          NULL AS average_time_ms,
+          NULL AS digits_remembered
+        FROM memory_results r
+        INNER JOIN users u ON u.id = r.user_id
+        GROUP BY u.id, u.username
+        ORDER BY best_score DESC, accuracy_percent DESC, last_played_at DESC
+        LIMIT ?`
       },
       number_memory: {
-        table: 'number_memory_results',
-        scoreExpr: 'MAX(r.correct_answers)',
-        sortDirection: 'DESC'
+        query: `SELECT
+          u.id AS user_id,
+          COALESCE(NULLIF(u.username, ''), CONCAT('user', u.id)) AS username,
+          MAX(r.correct_answers) AS best_score,
+          MAX(r.created_at) AS last_played_at,
+          COUNT(*) AS attempts_count,
+          MAX(r.level_reached) AS level_reached,
+          NULL AS accuracy_percent,
+          MAX(r.correct_answers) AS points,
+          NULL AS average_time_ms,
+          MAX(r.digits_remembered) AS digits_remembered
+        FROM number_memory_results r
+        INNER JOIN users u ON u.id = r.user_id
+        GROUP BY u.id, u.username
+        ORDER BY best_score DESC, digits_remembered DESC, last_played_at DESC
+        LIMIT ?`
       },
       typing: {
-        table: 'typing_results',
-        scoreExpr: 'MAX(r.wpm)',
-        sortDirection: 'DESC'
+        query: `SELECT
+          u.id AS user_id,
+          COALESCE(NULLIF(u.username, ''), CONCAT('user', u.id)) AS username,
+          MAX(r.wpm) AS best_score,
+          MAX(r.created_at) AS last_played_at,
+          COUNT(*) AS attempts_count,
+          NULL AS level_reached,
+          MAX(r.accuracy_percent) AS accuracy_percent,
+          MAX(r.cpm) AS points,
+          NULL AS average_time_ms,
+          NULL AS digits_remembered
+        FROM typing_results r
+        INNER JOIN users u ON u.id = r.user_id
+        GROUP BY u.id, u.username
+        ORDER BY best_score DESC, accuracy_percent DESC, last_played_at DESC
+        LIMIT ?`
       },
       aim: {
-        table: 'aim_results',
-        scoreExpr: 'MAX(r.accuracy_percent)',
-        sortDirection: 'DESC'
+        query: `SELECT
+          u.id AS user_id,
+          COALESCE(NULLIF(u.username, ''), CONCAT('user', u.id)) AS username,
+          MAX(r.accuracy_percent) AS best_score,
+          MAX(r.created_at) AS last_played_at,
+          COUNT(*) AS attempts_count,
+          NULL AS level_reached,
+          MAX(r.accuracy_percent) AS accuracy_percent,
+          MAX(r.targets_hit) AS points,
+          MIN(r.average_time_ms) AS average_time_ms,
+          NULL AS digits_remembered
+        FROM aim_results r
+        INNER JOIN users u ON u.id = r.user_id
+        GROUP BY u.id, u.username
+        ORDER BY best_score DESC, points DESC, last_played_at DESC
+        LIMIT ?`
       },
       stroop: {
-        table: 'stroop_results',
-        scoreExpr: 'MAX(r.correct_count)',
-        sortDirection: 'DESC'
+        query: `SELECT
+          u.id AS user_id,
+          COALESCE(NULLIF(u.username, ''), CONCAT('user', u.id)) AS username,
+          MAX(r.correct_count) AS best_score,
+          MAX(r.created_at) AS last_played_at,
+          COUNT(*) AS attempts_count,
+          NULL AS level_reached,
+          MAX(r.accuracy_percent) AS accuracy_percent,
+          MAX(r.correct_count) AS points,
+          MAX(r.average_time_ms) AS average_time_ms,
+          NULL AS digits_remembered
+        FROM stroop_results r
+        INNER JOIN users u ON u.id = r.user_id
+        GROUP BY u.id, u.username
+        ORDER BY best_score DESC, accuracy_percent DESC, last_played_at DESC
+        LIMIT ?`
       }
     };
 
@@ -390,20 +468,7 @@ const getLeaderboard = async (req, res) => {
       return res.status(400).json({ error: 'Nezināms leaderboard testa tips' });
     }
 
-    const rows = await runResultsQuerySafely(
-      `SELECT
-        u.id AS user_id,
-        COALESCE(NULLIF(u.username, ''), CONCAT('user', u.id)) AS username,
-        ${selected.scoreExpr} AS best_score,
-        MAX(r.created_at) AS last_played_at
-      FROM ${selected.table} r
-      INNER JOIN users u ON u.id = r.user_id
-      GROUP BY u.id, u.username
-      ORDER BY best_score ${selected.sortDirection}, last_played_at DESC
-      LIMIT ?`,
-      [limit],
-      `getLeaderboard:${testType}`
-    );
+    const rows = await runResultsQuerySafely(selected.query, [limit], `getLeaderboard:${testType}`);
 
     res.json({ testType, limit, results: rows });
   } catch (error) {
