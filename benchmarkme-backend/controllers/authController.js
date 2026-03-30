@@ -6,7 +6,16 @@ require('dotenv').config();
 // Reģistrācija - izveido jaunu lietotāju
 const signUp = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, username } = req.body;
+    const normalizedUsername = String(username || '').trim();
+
+    if (!normalizedUsername) {
+      return res.status(400).json({ error: 'Lietotājvārdam ir jābūt aizpildītam' });
+    }
+
+    if (normalizedUsername.length < 3 || normalizedUsername.length > 50) {
+      return res.status(400).json({ error: 'Lietotājvārdam jābūt no 3 līdz 50 rakstzīmēm' });
+    }
 
     // Pārbauda vai e-pasts jau eksistē
     const [existingUsers] = await pool.query(
@@ -18,19 +27,28 @@ const signUp = async (req, res) => {
       return res.status(400).json({ error: 'Lietotājs ar šo e-pastu jau eksistē' });
     }
 
+    const [existingUsernames] = await pool.query(
+      'SELECT id FROM users WHERE username = ?',
+      [normalizedUsername]
+    );
+
+    if (existingUsernames.length > 0) {
+      return res.status(400).json({ error: 'Šis lietotājvārds jau tiek izmantots' });
+    }
+
     // Šifrē paroli
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
     // Izveido lietotāju (UUID tiks ģenerēts ar triggeru)
     const [result] = await pool.query(
-      'INSERT INTO users (email, password_hash) VALUES (?, ?)',
-      [email, passwordHash]
+      'INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)',
+      [email, normalizedUsername, passwordHash]
     );
 
     // Iegūst jaunizveidoto lietotāju
     const [users] = await pool.query(
-      'SELECT id, email, created_at FROM users WHERE email = ?',
+      'SELECT id, email, username, created_at FROM users WHERE email = ?',
       [email]
     );
 
@@ -45,7 +63,7 @@ const signUp = async (req, res) => {
 
     res.status(201).json({
       message: 'Konts izveidots veiksmīgi!',
-      user: { id: user.id, email: user.email, created_at: user.created_at },
+      user: { id: user.id, email: user.email, username: user.username, created_at: user.created_at },
       token
     });
 
@@ -58,16 +76,21 @@ const signUp = async (req, res) => {
 // Pieteikšanās - autentificē lietotāju
 const signIn = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
+    const normalizedIdentifier = String(identifier || '').trim();
 
-    // Meklē lietotāju pēc e-pasta
+    if (!normalizedIdentifier) {
+      return res.status(400).json({ error: 'Ievadi e-pastu vai lietotājvārdu' });
+    }
+
+    // Meklē lietotāju pēc e-pasta vai lietotājvārda
     const [users] = await pool.query(
-      'SELECT id, email, password_hash, created_at FROM users WHERE email = ?',
-      [email]
+      'SELECT id, email, username, password_hash, created_at FROM users WHERE email = ? OR username = ? LIMIT 1',
+      [normalizedIdentifier, normalizedIdentifier]
     );
 
     if (users.length === 0) {
-      return res.status(401).json({ error: 'Nepareizs e-pasts vai parole' });
+      return res.status(401).json({ error: 'Nepareizs e-pasts/lietotājvārds vai parole' });
     }
 
     const user = users[0];
@@ -76,7 +99,7 @@ const signIn = async (req, res) => {
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
     if (!isValidPassword) {
-      return res.status(401).json({ error: 'Nepareizs e-pasts vai parole' });
+      return res.status(401).json({ error: 'Nepareizs e-pasts/lietotājvārds vai parole' });
     }
 
     // Izveido JWT tokenu
@@ -88,7 +111,7 @@ const signIn = async (req, res) => {
 
     res.json({
       message: 'Pieteikšanās veiksmīga!',
-      user: { id: user.id, email: user.email, created_at: user.created_at },
+      user: { id: user.id, email: user.email, username: user.username, created_at: user.created_at },
       token
     });
 
@@ -103,7 +126,7 @@ const getSession = async (req, res) => {
   try {
     // req.user tiek uzstādīts middleware
     const [users] = await pool.query(
-      'SELECT id, email, created_at FROM users WHERE id = ?',
+      'SELECT id, email, username, created_at FROM users WHERE id = ?',
       [req.user.id]
     );
 

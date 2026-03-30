@@ -4,16 +4,17 @@ import { useToast } from '@/hooks/use-toast';
 
 // Lietotāja tips
 interface User {
-  id: string;
+  id: number;
   email: string;
+  username: string | null;
   created_at: string;
 }
 
 // Autentifikācijas konteksta tips
 interface AuthContextType {
   user: User | null;
-  signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, username: string) => Promise<{ error: Error | null }>;
+  signIn: (identifier: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   loading: boolean;
 }
@@ -56,11 +57,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   // Reģistrācijas funkcija
-  const signUp = async (email: string, password: string): Promise<{ error: Error | null }> => {
+  const signUp = async (email: string, password: string, username: string): Promise<{ error: Error | null }> => {
     try {
       const data = await apiRequest<{ user: User; token: string }>('/auth/signup', {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, username }),
       });
 
       // Saglabā tokenu un lietotāju
@@ -85,11 +86,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Pieteikšanās funkcija
-  const signIn = async (email: string, password: string): Promise<{ error: Error | null }> => {
+  const signIn = async (identifier: string, password: string): Promise<{ error: Error | null }> => {
     try {
       const data = await apiRequest<{ user: User; token: string }>('/auth/signin', {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier, password }),
       });
 
       // Saglabā tokenu un lietotāju

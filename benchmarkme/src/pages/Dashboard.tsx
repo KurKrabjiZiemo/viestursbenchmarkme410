@@ -17,7 +17,8 @@ const translateTestType = (testType: string): string => {
     'number_memory': 'Skaitļu Atmiņa',
     'number-memory': 'Skaitļu Atmiņa',
     'typing': 'Rakstīšanas Ātrums',
-    'aim': 'Precizitātes Treniņš'
+    'aim': 'Precizitātes Treniņš',
+    'stroop': 'Stroop Krāsu-Vārdu Tests'
   };
   return translations[testType] || testType.replace(/_/g, ' ');
 };
@@ -105,15 +106,23 @@ const Dashboard = () => {
       const scores = tests.map(t => t.score);
       const latest = tests[0];
       const oldest = tests[tests.length - 1];
+      const isLowerBetter = testType === 'reaction';
+      const oldestScore = oldest?.score || 0;
+
       // Aprēķina uzlabojumu procentos (salīdzinot pēdējo ar pirmo)
-      const improvement = latest && oldest ? ((latest.score - oldest.score) / oldest.score * 100).toFixed(1) : 0;
+      const improvementValue = latest && oldest && oldestScore !== 0
+        ? (isLowerBetter
+            ? ((oldest.score - latest.score) / oldest.score) * 100
+            : ((latest.score - oldest.score) / oldest.score) * 100)
+        : 0;
 
       return {
         testType,
         count: tests.length, // Cik reižu tests veikts
         averageScore: (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(0), // Vidējais rezultāts
-        bestScore: Math.max(...scores), // Labākais rezultāts
-        improvement: Number(improvement), // Uzlabojums procentos
+        bestScore: isLowerBetter ? Math.min(...scores) : Math.max(...scores), // Labākais rezultāts
+        scoreSuffix: isLowerBetter ? 'ms' : '',
+        improvement: Number(improvementValue.toFixed(1)), // Uzlabojums procentos
         latestDate: latest.created_at // Pēdējā testa datums
       };
     });
@@ -244,7 +253,7 @@ const Dashboard = () => {
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Labākais rezultāts</p>
-                        <p className="text-xl font-bold text-cognitive-success">{stat.bestScore}</p>
+                        <p className="text-xl font-bold text-cognitive-success">{stat.bestScore}{stat.scoreSuffix}</p>
                       </div>
                     </div>
                   </div>

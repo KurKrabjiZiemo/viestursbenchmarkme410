@@ -7,9 +7,16 @@ const {
   saveNumberMemoryResult,
   saveTypingResult,
   saveAimResult,
+  saveStroopResult,
   getTestResults,
-  getAllResults
+  getAllResults,
+  getRecentResults,
+  getLeaderboard
 } = require('../controllers/testResultsController');
+
+// Publisks leaderboard feed
+router.get('/recent', getRecentResults);
+router.get('/leaderboard', getLeaderboard);
 
 // Visi maršruti ir aizsargāti
 router.use(authenticateToken);
@@ -20,6 +27,7 @@ router.post('/memory', saveMemoryResult);
 router.post('/number-memory', saveNumberMemoryResult);
 router.post('/typing', saveTypingResult);
 router.post('/aim', saveAimResult);
+router.post('/stroop', saveStroopResult);
 
 // Iegūt rezultātus
 router.get('/all', getAllResults);
