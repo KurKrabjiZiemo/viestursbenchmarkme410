@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: STROOPTEST.TSX - STRŪPA EFEKTA TESTA KOMPONENTE
+ * APRAKSTS: STRŪPA EFEKTA TESTS, KUR LIETOTĀJAM JĀNOSAKA KRĀSA,
+ *           KURĀ VĀRDS IR UZRAKSTĪTS, NEVIS VĀRDA NOZĪME
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 import { useMemo, useState } from "react";
 import { ArrowLeft, Play, RotateCcw, Palette, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";

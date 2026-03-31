@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: TESTRESULTS.JS - TESTU REZULTĀTU MARŠRUTI
+ * APRAKSTS: TESTU REZULTĀTU API MARŠRUTU DEFINĪCIJAS - REZULTĀTU
+ *           SAGLABĀŠANA, STATISTIKA UN LĪDERU TABULA
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');

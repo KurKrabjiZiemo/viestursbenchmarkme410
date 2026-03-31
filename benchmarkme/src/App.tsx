@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: APP.TSX - BENCHMARKME GALVENĀ APLIKĀCIJAS KOMPONENTE
+ * APRAKSTS: APLIKĀCIJAS MARŠRUTĒŠANA, AUTENTIFIKĀCIJAS NODROŠINĀTĀJS
+ *           UN GLOBĀLO KOMPONENTU INICIALIZĀCIJA
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 // Importē UI komponentus paziņojumiem un tooltipiem
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";

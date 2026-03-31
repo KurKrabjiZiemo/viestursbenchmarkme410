@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: DASHBOARD.TSX - LIETOTĀJA INFORMĀCIJAS PANEĻA KOMPONENTE
+ * APRAKSTS: LIETOTĀJA STATISTIKAS, TESTU REZULTĀTU UN SNIEGUMA
+ *           ANALĪZES PĀRSKATS AR VIZUĀLIEM DATIEM
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 // Importē nepieciešamos React hook-us un komponentus
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";

@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: AUTHCONTROLLER.JS - AUTENTIFIKĀCIJAS KONTROLIERIS
+ * APRAKSTS: LIETOTĀJU REĢISTRĀCIJAS, PIETEIKŠANĀS, SESIJAS PĀRBAUDES
+ *           UN IZRAKSTĪŠANĀS LOĢIKAS APSTRĀDE
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 const pool = require('../config/database');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');

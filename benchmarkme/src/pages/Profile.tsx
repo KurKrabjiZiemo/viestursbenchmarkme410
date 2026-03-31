@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: PROFILE.TSX - LIETOTĀJA PROFILA LAPAS KOMPONENTE
+ * APRAKSTS: LIETOTĀJA PROFILA INFORMĀCIJAS APSKATE UN REDIĢĒŠANA,
+ *           IETVER LIETOTĀJVĀRDA MAIŅU UN KONTA PĀRVALDĪBU
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 // Importē nepieciešamos React hook-us un komponentus
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";

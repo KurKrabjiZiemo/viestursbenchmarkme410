@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: NUMBERMEMORYTEST.TSX - CIPARU ATMĒŅAS TESTA KOMPONENTE
+ * APRAKSTS: CIPARU ATMĒŅAS TESTS, KUR LIETOTĀJAM JĀIEGAUMĒ
+ *           UN JĀIEVADA AIZVIEN GARĀKAS CIPARU VIRKNES
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 // Importē nepieciešamos React hook-us
 import { useState, useEffect } from "react";
 // Importē ikonas

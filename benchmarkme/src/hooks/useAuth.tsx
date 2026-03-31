@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: USEAUTH.TSX - AUTENTIFIKĀCIJAS HOOK KOMPONENTE
+ * APRAKSTS: REACT KONTEKSTS UN HOOK LIETOTĀJA AUTENTIFIKĀCIJAI,
+ *           IETVER PIETEIKŠANOS, REĢISTRĀCIJU UN SESIJAS PĀRVALDĪBU
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { apiRequest, setToken, removeToken, getToken } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';

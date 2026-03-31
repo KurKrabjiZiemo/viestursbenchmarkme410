@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: TYPINGTEST.TSX - RAKSTĪŠANAS ĀTRUMA TESTA KOMPONENTE
+ * APRAKSTS: RAKSTĪŠANAS ĀTRUMA UN PRECIZITĀTES TESTS, MĒRA WPM
+ *           (VĀRDUS MINŪTĒ) UN PRECIZITĀTES PROCENTU
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 import { useState, useEffect, useRef, useCallback } from "react";
 import { ArrowLeft, Play, RotateCcw, Keyboard, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";

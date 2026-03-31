@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: AIMTRAINER.TSX - MĒRĶA TRENIŅA TESTA KOMPONENTE
+ * APRAKSTS: MĒRĶA PRECĪZITĀTES UN ĀTRUMA TESTS, KUR LIETOTĀJAM
+ *           JĀKLIKŠĶINA UZ KUSTĪGIEM MĒRĶIEM PĒC IESPĒJAS ĀTRĀK
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 // Importē nepieciešamos React hook-us
 import { useState, useEffect, useRef, useCallback } from "react";
 // Importē ikonas

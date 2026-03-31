@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: NOTFOUND.TSX - 404 KĻŪDAS LAPAS KOMPONENTE
+ * APRAKSTS: KĻŪDAS LAPA, KAS TIEK PARĀDĪTA, KAD LIETOTĀJS MĒĢINA
+ *           PIEKĻŪT NEESOŠAM MARŠRUTAM APLIKĀCIJĀ
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 

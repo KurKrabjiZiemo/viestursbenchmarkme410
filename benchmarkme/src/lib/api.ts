@@ -1,4 +1,10 @@
-// src/lib/api.ts
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: API.TS - API UTILITĀŠU FAILS
+ * APRAKSTS: HTTP PIEPRASĪJUMU APSTRĀDE, TOKENU PĀRVALDĪBA
+ *           UN KOMUNIKĀCIJA AR BACKEND SERVERI
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */// src/lib/api.ts
 // API utilītiju fails - visi HTTP pieprasījumi iet caur šo
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';

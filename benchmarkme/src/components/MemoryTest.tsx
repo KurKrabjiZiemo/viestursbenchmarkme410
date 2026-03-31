@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: MEMORYTEST.TSX - VIZUĀLĀS ATMĒŅAS TESTA KOMPONENTE
+ * APRAKSTS: VIZUĀLĀS ATMĒŅAS TESTS, KUR LIETOTĀJAM JĀIEGAUMĒ
+ *           UN JĀATVEIDO REDZĒTO ELEMENTU IZVIETOŠANA
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 // Importē nepieciešamos React hook-us
 import { useState, useEffect } from "react";
 // Importē ikonas

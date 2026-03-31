@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: REACTIONTEST.TSX - REAKCIJAS LAIKA TESTA KOMPONENTE
+ * APRAKSTS: REAKCIJAS ĀTRUMA TESTS, KUR LIETOTĀJAM JĀREAGĒ
+ *           UZ VIZĀLU SIGNĀLU PĒC IESPĒJAS ĀTRĀK
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 // Importē nepieciešamos React hook-us
 import { useState, useEffect, useRef } from "react";
 // Importē ikonas

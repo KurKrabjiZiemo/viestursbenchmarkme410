@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: AUTH.TSX - AUTENTIFIKĀCIJAS LAPAS KOMPONENTE
+ * APRAKSTS: LIETOTĀJA PIETEIKŠANĀS UN REĢISTRĀCIJAS SASKARNE,
+ *           IETVER FORMU VALIDĀCIJU UN AUTENTIFIKĀCIJAS LOĢIKU
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 // Importē nepieciešamos React hook-us un komponentus
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";

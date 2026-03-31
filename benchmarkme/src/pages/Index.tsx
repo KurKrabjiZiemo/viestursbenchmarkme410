@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: INDEX.TSX - BENCHMARKME GALVENĀ LAPAS KOMPONENTE
+ * APRAKSTS: GALVENĀ LIETOTĀJA SASKARNE KOGNITĪVO TESTU PLATFORMAI,
+ *           IETVER TESTU IZVĒLI, NAVIGĀCIJU UN SNIEGUMA IZSEKOŠANU
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Brain, Zap, Target, Timer, TrendingUp, Hash, Keyboard, Crosshair, User, BarChart3, Palette, Trophy } from "lucide-react";

@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: USETESTRESULTS.TSX - TESTU REZULTĀTU HOOK KOMPONENTE
+ * APRAKSTS: HOOK TESTU REZULTĀTU SAGLABĀŠANAI DATUBĀZĒ,
+ *           APSTRĀDĀ DAŽĀDU TESTU VEIDU REZULTĀTU NOSŪTĪŠANU
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 import { apiRequest } from '@/lib/api';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
