@@ -15,8 +15,10 @@ import { useToast } from "@/hooks/use-toast";
 // Autentifikācijas lapa - pieteikšanās un reģistrācija
 const Auth = () => {
   // Stāvokļa mainīgie formas laukiem
+  const [signInIdentifier, setSignInIdentifier] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   // Iegūst autentifikācijas funkcijas un lietotāja stāvokli
   const { signIn, signUp, user } = useAuth();
@@ -39,8 +41,18 @@ const Auth = () => {
   // Apstrādā pieteikšanās formas iesniegšanu
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmedIdentifier = signInIdentifier.trim();
+    if (!trimmedIdentifier) {
+      toast({
+        title: "Trūkst dati",
+        description: "Ievadi e-pastu vai lietotājvārdu",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
-    await signIn(email, password);
+    await signIn(trimmedIdentifier, password);
     setIsLoading(false);
   };
 
@@ -57,9 +69,19 @@ const Auth = () => {
       });
       return;
     }
+
+    const trimmedUsername = username.trim();
+    if (trimmedUsername.length < 3 || trimmedUsername.length > 50) {
+      toast({
+        title: "Nederīgs Lietotājvārds",
+        description: "Lietotājvārdam jābūt no 3 līdz 50 rakstzīmēm",
+        variant: "destructive"
+      });
+      return;
+    }
     
     setIsLoading(true);
-    await signUp(email, password);
+    await signUp(email, password, trimmedUsername);
     setIsLoading(false);
   };
 
@@ -87,13 +109,13 @@ const Auth = () => {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">E-pasts</Label>
+                  <Label htmlFor="signin-identifier">E-pasts vai lietotājvārds</Label>
                   <Input
-                    id="signin-email"
-                    type="email"
-                    placeholder="tavs@epasts.lv"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    id="signin-identifier"
+                    type="text"
+                    placeholder="tavs@epasts.lv vai mans_lietotajs"
+                    value={signInIdentifier}
+                    onChange={(e) => setSignInIdentifier(e.target.value)}
                     required
                   />
                 </div>
@@ -120,6 +142,19 @@ const Auth = () => {
 
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-username">Lietotājvārds</Label>
+                  <Input
+                    id="signup-username"
+                    type="text"
+                    placeholder="mans_lietotajs"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    minLength={3}
+                    maxLength={50}
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">E-pasts</Label>
                   <Input

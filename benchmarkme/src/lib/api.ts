@@ -35,6 +35,9 @@ export const apiRequest = async <T = unknown>(
   
   // Ja kļūda, izmet to
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      removeToken();
+    }
     throw new Error(data.error || data.message || 'Kaut kas nogāja greizi');
   }
   

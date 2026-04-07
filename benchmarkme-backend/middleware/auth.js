@@ -17,9 +17,14 @@ const authenticateToken = (req, res, next) => {
     if (err) {
       return res.status(403).json({ error: 'Nederīgs vai beidzies tokens.' });
     }
+
+    const numericUserId = Number(user?.id);
+    if (!Number.isInteger(numericUserId) || numericUserId <= 0) {
+      return res.status(401).json({ error: 'Nederīgs lietotāja tokens. Pieslēdzies vēlreiz.' });
+    }
     
     // Pievieno lietotāja info pieprasījumam
-    req.user = user;
+    req.user = { ...user, id: numericUserId };
     next();
   });
 };

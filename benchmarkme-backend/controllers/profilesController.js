@@ -6,7 +6,7 @@ const getProfile = async (req, res) => {
     const userId = req.user.id;
 
     const [users] = await pool.query(
-      'SELECT * FROM users WHERE user_id = ?',
+      'SELECT id, email, username, created_at, updated_at FROM users WHERE id = ?',
       [userId]
     );
 
@@ -25,15 +25,33 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { username, avatar_url } = req.body;
+    const { username } = req.body;
+    const normalizedUsername = String(username || '').trim();
+
+    if (!normalizedUsername) {
+      return res.status(400).json({ error: 'Lietotājvārdam ir jābūt aizpildītam' });
+    }
+
+    if (normalizedUsername.length < 3 || normalizedUsername.length > 50) {
+      return res.status(400).json({ error: 'Lietotājvārdam jābūt no 3 līdz 50 rakstzīmēm' });
+    }
+
+    const [existingUsernames] = await pool.query(
+      'SELECT id FROM users WHERE username = ? AND id <> ?',
+      [normalizedUsername, userId]
+    );
+
+    if (existingUsernames.length > 0) {
+      return res.status(400).json({ error: 'Šis lietotājvārds jau tiek izmantots' });
+    }
 
     await pool.query(
-      'UPDATE users SET username = ?, avatar_url = ? WHERE user_id = ?',
-      [username, avatar_url, userId]
+      'UPDATE users SET username = ? WHERE id = ?',
+      [normalizedUsername, userId]
     );
 
     const [users] = await pool.query(
-      'SELECT * FROM users WHERE user_id = ?',
+      'SELECT id, email, username, created_at, updated_at FROM users WHERE id = ?',
       [userId]
     );
 
