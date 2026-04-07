@@ -28,7 +28,7 @@ const Auth = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
-
+  
   // Ja lietotājs jau ir pieteicies, pārvirza uz sākumlapu
   useEffect(() => {
     if (user) {
