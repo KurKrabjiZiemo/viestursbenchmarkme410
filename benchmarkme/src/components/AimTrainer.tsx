@@ -18,6 +18,7 @@ import { useTestResults } from "@/hooks/useTestResults";
 // Komponentes rekvizīti
 interface AimTrainerProps {
   onBack: () => void; // Funkcija atgriešanās uz sākumlapu
+  language: "lv" | "en";
 }
 
 // Testa stāvokļa tipi
@@ -39,7 +40,7 @@ const MIN_TARGET_SIZE = 40; // Minimālais mērķa izmērs
 const MAX_TARGET_SIZE = 80; // Maksimālais mērķa izmērs
 
 // Precizitātes treniņa komponente
-const AimTrainer = ({ onBack }: AimTrainerProps) => {
+const AimTrainer = ({ onBack, language }: AimTrainerProps) => {
   // Iegūst funkciju rezultātu saglabāšanai
   const { saveTestResult } = useTestResults();
   
@@ -53,6 +54,30 @@ const AimTrainer = ({ onBack }: AimTrainerProps) => {
   const [attempts, setAttempts] = useState<{ score: number; accuracy: number; avgReactionTime: number }[]>([]); // Visi mēģinājumi
   const [reactionTimes, setReactionTimes] = useState<number[]>([]); // Reakcijas laiki
   const [gameAreaSize, setGameAreaSize] = useState({ width: 800, height: 500 }); // Spēles laukuma izmērs
+
+  const t = {
+    back: language === "lv" ? "Atpakaļ" : "Back",
+    title: language === "lv" ? "Precizitātes Treniņš" : "Aim Trainer",
+    timeLeft: language === "lv" ? "Atlicis Laiks" : "Time Left",
+    score: language === "lv" ? "Rezultāts" : "Score",
+    hits: language === "lv" ? "Trāpījumi" : "Hits",
+    accuracy: language === "lv" ? "Precizitāte" : "Accuracy",
+    avgReaction: language === "lv" ? "Vid. Reakcija" : "Avg Reaction",
+    ready: language === "lv" ? "Gatavs mērķēt?" : "Ready to aim?",
+    active: language === "lv" ? "Nospied mērķus!" : "Click the targets!",
+    finalScore: language === "lv" ? "Galīgais Rezultāts" : "Final Score",
+    readyDesc:
+      language === "lv" ? "Nospied mērķus, cik ātri un precīzi vien vari" : "Click targets as quickly and accurately as possible",
+    activeDesc:
+      language === "lv"
+        ? "Mazāki mērķi un ātrākas reakcijas = vairāk punktu"
+        : "Smaller targets and faster reactions = more points",
+    start: language === "lv" ? "Sākt Precizitātes Treniņu" : "Start Aim Trainer",
+    clickTargets: language === "lv" ? "Nospied mērķus" : "Click targets",
+    complete: language === "lv" ? "Tests Pabeigts!" : "Test Complete!",
+    playAgain: language === "lv" ? "Spēlēt Vēlreiz" : "Play Again",
+    reset: language === "lv" ? "Atiestatīt" : "Reset",
+  };
   
   // Atsauces
   const gameAreaRef = useRef<HTMLDivElement>(null); // Spēles laukuma atsauce
@@ -172,10 +197,10 @@ const AimTrainer = ({ onBack }: AimTrainerProps) => {
   };
 
   const getPerformanceRating = (accuracy: number) => {
-    if (accuracy >= 80) return { text: "Izcili", color: "text-cognitive-success" };
-    if (accuracy >= 60) return { text: "Labi", color: "text-cognitive-accent" };
-    if (accuracy >= 40) return { text: "Vidēji", color: "text-cognitive-warning" };
-    return { text: "Nepieciešama Prakse", color: "text-destructive" };
+    if (accuracy >= 80) return { text: language === "lv" ? "Izcili" : "Excellent", color: "text-cognitive-success" };
+    if (accuracy >= 60) return { text: language === "lv" ? "Labi" : "Good", color: "text-cognitive-accent" };
+    if (accuracy >= 40) return { text: language === "lv" ? "Vidēji" : "Average", color: "text-cognitive-warning" };
+    return { text: language === "lv" ? "Nepieciešama Prakse" : "Needs Practice", color: "text-destructive" };
   };
 
   const getBestScore = () => {
@@ -226,11 +251,11 @@ const AimTrainer = ({ onBack }: AimTrainerProps) => {
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Atpakaļ
+            {t.back}
           </Button>
           <div className="flex items-center gap-2">
             <Target className="w-6 h-6 text-cognitive-primary" />
-            <h1 className="text-3xl font-bold">Precizitātes Treniņš</h1>
+            <h1 className="text-3xl font-bold">{t.title}</h1>
           </div>
         </div>
 
@@ -240,23 +265,23 @@ const AimTrainer = ({ onBack }: AimTrainerProps) => {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
               <div className="space-y-1">
                 <div className="text-2xl font-bold text-cognitive-warning">{timeLeft}s</div>
-                <div className="text-sm text-muted-foreground">Atlicis Laiks</div>
+                <div className="text-sm text-muted-foreground">{t.timeLeft}</div>
               </div>
               <div className="space-y-1">
                 <div className="text-2xl font-bold text-cognitive-primary">{score}</div>
-                <div className="text-sm text-muted-foreground">Rezultāts</div>
+                <div className="text-sm text-muted-foreground">{t.score}</div>
               </div>
               <div className="space-y-1">
                 <div className="text-2xl font-bold text-cognitive-success">{hits}</div>
-                <div className="text-sm text-muted-foreground">Trāpījumi</div>
+                <div className="text-sm text-muted-foreground">{t.hits}</div>
               </div>
               <div className="space-y-1">
                 <div className="text-2xl font-bold text-cognitive-accent">{accuracy}%</div>
-                <div className="text-sm text-muted-foreground">Precizitāte</div>
+                <div className="text-sm text-muted-foreground">{t.accuracy}</div>
               </div>
               <div className="space-y-1">
                 <div className="text-2xl font-bold text-muted-foreground">{avgReactionTime}ms</div>
-                <div className="text-sm text-muted-foreground">Vid. Reakcija</div>
+                <div className="text-sm text-muted-foreground">{t.avgReaction}</div>
               </div>
             </div>
           </CardContent>
@@ -266,14 +291,14 @@ const AimTrainer = ({ onBack }: AimTrainerProps) => {
         <Card className="mb-8 bg-gradient-card border-border/50">
           <CardHeader className="text-center">
             <CardTitle>
-              {testState === "ready" && "Gatavs mērķēt?"}
-              {testState === "active" && "Nospied mērķus!"}
-              {testState === "complete" && `Galīgais Rezultāts: ${score}`}
+              {testState === "ready" && t.ready}
+              {testState === "active" && t.active}
+              {testState === "complete" && `${t.finalScore}: ${score}`}
             </CardTitle>
             <CardDescription>
-              {testState === "ready" && "Nospied mērķus, cik ātri un precīzi vien vari"}
-              {testState === "active" && "Mazāki mērķi un ātrākas reakcijas = vairāk punktu"}
-              {testState === "complete" && `${getPerformanceRating(accuracy).text} - ${accuracy}% precizitāte`}
+              {testState === "ready" && t.readyDesc}
+              {testState === "active" && t.activeDesc}
+              {testState === "complete" && `${getPerformanceRating(accuracy).text} - ${accuracy}% ${t.accuracy.toLowerCase()}`}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -285,7 +310,7 @@ const AimTrainer = ({ onBack }: AimTrainerProps) => {
                   size="lg"
                 >
                   <Play className="w-4 h-4 mr-2" />
-                  Sākt Precizitātes Treniņu
+                  {t.start}
                 </Button>
               </div>
             )}
@@ -302,7 +327,7 @@ const AimTrainer = ({ onBack }: AimTrainerProps) => {
                   {/* Crosshair cursor indicator */}
                   <div className="absolute top-4 left-4 flex items-center gap-2 text-muted-foreground pointer-events-none">
                     <Crosshair className="w-4 h-4" />
-                    <span className="text-sm">Nospied mērķus</span>
+                    <span className="text-sm">{t.clickTargets}</span>
                   </div>
 
                   {/* Targets */}
@@ -333,7 +358,7 @@ const AimTrainer = ({ onBack }: AimTrainerProps) => {
                     <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
                       <div className="text-center space-y-4">
                         <div className="text-4xl font-bold text-cognitive-success">
-                          Tests Pabeigts!
+                          {t.complete}
                         </div>
                         <div className="flex gap-4 justify-center">
                           <Button 
@@ -341,11 +366,11 @@ const AimTrainer = ({ onBack }: AimTrainerProps) => {
                             className="bg-cognitive-primary hover:bg-cognitive-primary/80"
                           >
                             <Play className="w-4 h-4 mr-2" />
-                            Spēlēt Vēlreiz
+                            {t.playAgain}
                           </Button>
                           <Button onClick={resetTest} variant="secondary">
                             <RotateCcw className="w-4 h-4 mr-2" />
-                            Atiestatīt
+                            {t.reset}
                           </Button>
                         </div>
                       </div>

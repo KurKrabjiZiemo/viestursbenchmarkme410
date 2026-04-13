@@ -13,6 +13,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/api";
+import { useLanguage } from "@/hooks/useLanguage";
+import LanguageSwitch from "@/components/LanguageSwitch";
 import ReactionTest from "@/components/ReactionTest";
 import MemoryTest from "@/components/MemoryTest";
 import NumberMemoryTest from "@/components/NumberMemoryTest";
@@ -21,17 +23,18 @@ import AimTrainer from "@/components/AimTrainer";
 import StroopTest from "@/components/StroopTest";
 
 // Tulkojums jo stulbais db
-const translateTestType = (testType: string): string => {
-  const translations: Record<string, string> = {
-    'reaction': 'Reakcijas laiks',
-    'memory': 'Vizuālā atmiņa',
-    'number_memory': 'Skaitļu atmiņa',
-    'number-memory': 'Skaitļu atmiņa',
-    'typing': 'Rakstīšanas ātrums',
-    'aim': 'Precizitātes treniņš',
-    'stroop': 'Krāsu-vārdu tests'
+const translateTestType = (testType: string, language: "lv" | "en"): string => {
+  const translations: Record<string, { lv: string; en: string }> = {
+    reaction: { lv: "Reakcijas laiks", en: "Reaction time" },
+    memory: { lv: "Vizuālā atmiņa", en: "Visual memory" },
+    number_memory: { lv: "Skaitļu atmiņa", en: "Number memory" },
+    "number-memory": { lv: "Skaitļu atmiņa", en: "Number memory" },
+    typing: { lv: "Rakstīšanas ātrums", en: "Typing speed" },
+    aim: { lv: "Precizitātes treniņš", en: "Aim trainer" },
+    stroop: { lv: "Krāsu-vārdu tests", en: "Color-word test" },
   };
-  return translations[testType] || testType.replace(/_/g, ' ');
+  const translation = translations[testType];
+  return translation ? translation[language] : testType.replace(/_/g, " ");
 };
 
 // Definē visus iespējamos testu veidus
@@ -71,6 +74,7 @@ interface RecentResultRow {
 
 // Galvenā sākumlapas komponente
 const Index = () => {
+  const { language } = useLanguage();
   // Saglabā pašreiz aktīvo testu vai paneli
   const [currentTest, setCurrentTest] = useState<TestType>(() => {
     // Ielādē saglabāto testu no localStorage, ja tas pastāv
@@ -87,19 +91,19 @@ const Index = () => {
   const renderCurrentTest = () => {
     switch (currentTest) {
       case "reaction":
-        return <ReactionTest onBack={() => setCurrentTest("dashboard")} />;
+        return <ReactionTest onBack={() => setCurrentTest("dashboard")} language={language} />;
       case "memory":
-        return <MemoryTest onBack={() => setCurrentTest("dashboard")} />;
+        return <MemoryTest onBack={() => setCurrentTest("dashboard")} language={language} />;
       case "number":
-        return <NumberMemoryTest onBack={() => setCurrentTest("dashboard")} />;
+        return <NumberMemoryTest onBack={() => setCurrentTest("dashboard")} language={language} />;
       case "typing":
-        return <TypingTest onBack={() => setCurrentTest("dashboard")} />;
+        return <TypingTest onBack={() => setCurrentTest("dashboard")} language={language} />;
       case "aim":
-        return <AimTrainer onBack={() => setCurrentTest("dashboard")} />;
+        return <AimTrainer onBack={() => setCurrentTest("dashboard")} language={language} />;
       case "stroop":
-        return <StroopTest onBack={() => setCurrentTest("dashboard")} />;
+        return <StroopTest onBack={() => setCurrentTest("dashboard")} language={language} />;
       default:
-        return <Dashboard onStartTest={setCurrentTest} />;
+        return <Dashboard onStartTest={setCurrentTest} language={language} />;
     }
   };
 
@@ -110,13 +114,38 @@ const Index = () => {
   );
 };
 
-const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) => {
+const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) => void; language: "lv" | "en" }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [results, setResults] = useState<TestResult[]>([]);
   const [selectedLeaderboardTest, setSelectedLeaderboardTest] = useState<LeaderboardTestType>("reaction");
   const [leaderboardRows, setLeaderboardRows] = useState<LeaderboardRow[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
+
+  const t = {
+    leaderboard: "Leaderboard",
+    bestByType: language === "lv" ? "Labākie rezultāti pēc testa tipa" : "Best scores by test type",
+    selectTest: language === "lv" ? "Izvēlies testu" : "Select a test",
+    loadingLeaderboard: language === "lv" ? "Ielādē leaderboard..." : "Loading leaderboard...",
+    noLeaderboardResults: language === "lv" ? "Vēl nav rezultātu šim testam." : "No results yet for this test.",
+    you: language === "lv" ? "(Tu)" : "(You)",
+    dashboard: language === "lv" ? "Panelis" : "Dashboard",
+    profile: language === "lv" ? "Profils" : "Profile",
+    signIn: language === "lv" ? "Pieteikties" : "Sign In",
+    hero: language === "lv"
+      ? "Trenē savas kognitīvās spējas ar izstrādātiem testiem, kas paredzēti, lai pārbaudītu tavas spējas!"
+      : "Train your cognitive skills with purpose-built tests designed to challenge your abilities!",
+    start: language === "lv" ? "Sākt!" : "Start!",
+    recentActivity: language === "lv" ? "Jaunākās aktivitātes" : "Recent Activity",
+    latestResults: language === "lv" ? "Tavi jaunākie testa rezultāti" : "Your latest test results",
+    score: language === "lv" ? "Rezultāts" : "Score",
+    level: language === "lv" ? "Līmenis" : "Level",
+    accuracy: language === "lv" ? "Precizitāte" : "Accuracy",
+    points: language === "lv" ? "Punkti" : "Points",
+    digits: language === "lv" ? "Cipari" : "Digits",
+    avgTime: language === "lv" ? "Vid. laiks" : "Avg time",
+    attempts: language === "lv" ? "Mēģinājumi" : "Attempts",
+  };
 
   // Ielādē lietotāja jaunākos testa rezultātus
   useEffect(() => {
@@ -233,77 +262,77 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
     const details: string[] = [];
 
     if (row.level_reached != null) {
-      details.push(`Level: ${row.level_reached}`);
+      details.push(`${t.level}: ${row.level_reached}`);
     }
 
     if (row.accuracy_percent != null) {
-      details.push(`Precizitāte: ${Number(row.accuracy_percent).toFixed(1)}%`);
+      details.push(`${t.accuracy}: ${Number(row.accuracy_percent).toFixed(1)}%`);
     }
 
     if (row.points != null && testType !== 'reaction') {
-      details.push(`Punkti: ${Math.round(Number(row.points))}`);
+      details.push(`${t.points}: ${Math.round(Number(row.points))}`);
     }
 
     if (row.digits_remembered != null) {
-      details.push(`Cipari: ${Math.round(Number(row.digits_remembered))}`);
+      details.push(`${t.digits}: ${Math.round(Number(row.digits_remembered))}`);
     }
 
     if (row.average_time_ms != null && (testType === 'reaction' || testType === 'aim' || testType === 'stroop')) {
-      details.push(`Vid. laiks: ${Math.round(Number(row.average_time_ms))} ms`);
+      details.push(`${t.avgTime}: ${Math.round(Number(row.average_time_ms))} ms`);
     }
 
     if (row.attempts_count != null) {
-      details.push(`Mēģinājumi: ${Math.round(Number(row.attempts_count))}`);
+      details.push(`${t.attempts}: ${Math.round(Number(row.attempts_count))}`);
     }
 
     return details.slice(0, 3);
   };
 
   const leaderboardTestOptions: Array<{ value: LeaderboardTestType; label: string }> = [
-    { value: 'typing', label: 'Rakstīšanas ātrums' },
-    { value: 'reaction', label: 'Reakcijas laiks' },
-    { value: 'memory', label: 'Vizuālā atmiņa' },
-    { value: 'number_memory', label: 'Skaitļu atmiņa' },
-    { value: 'aim', label: 'Precizitātes treniņš' },
-    { value: 'stroop', label: 'Stroop tests' }
+    { value: 'typing', label: language === "lv" ? 'Rakstīšanas ātrums' : 'Typing speed' },
+    { value: 'reaction', label: language === "lv" ? 'Reakcijas laiks' : 'Reaction time' },
+    { value: 'memory', label: language === "lv" ? 'Vizuālā atmiņa' : 'Visual memory' },
+    { value: 'number_memory', label: language === "lv" ? 'Skaitļu atmiņa' : 'Number memory' },
+    { value: 'aim', label: language === "lv" ? 'Precizitātes treniņš' : 'Aim trainer' },
+    { value: 'stroop', label: language === "lv" ? 'Stroop tests' : 'Stroop test' }
   ];
 
   const tests = [
     {
       id: "reaction" as TestType,
-      title: "Reakcijas laiks",
-      description: "Pārbaudi savus refleksus!",
+      title: language === "lv" ? "Reakcijas laiks" : "Reaction time",
+      description: language === "lv" ? "Pārbaudi savus refleksus!" : "Test your reflexes!",
       icon: Zap,
       gradient: "bg-gradient-primary",
       delay: "0ms"
     },
     {
       id: "memory" as TestType,
-      title: "Vizuālā atmiņa",
-      description: "Mēģini atcerēties lauciņus!",
+      title: language === "lv" ? "Vizuālā atmiņa" : "Visual memory",
+      description: language === "lv" ? "Mēģini atcerēties lauciņus!" : "Try to remember the tiles!",
       icon: Brain,
       gradient: "bg-gradient-accent",
       delay: "150ms"
     },
     {
       id: "number" as TestType,
-      title: "Skaitļu atmiņa",
-      description: "Atceries skaitļu secību!",
+      title: language === "lv" ? "Skaitļu atmiņa" : "Number memory",
+      description: language === "lv" ? "Atceries skaitļu secību!" : "Remember the number sequence!",
       icon: Hash,
       gradient: "bg-gradient-primary",
       delay: "300ms"
     },
     {
       id: "typing" as TestType,
-      title: "Rakstīšanas ātrums",
-      description: "Pārbaudi savu rakstīšanas ātrumu!",
+      title: language === "lv" ? "Rakstīšanas ātrums" : "Typing speed",
+      description: language === "lv" ? "Pārbaudi savu rakstīšanas ātrumu!" : "Test your typing speed!",
       icon: Keyboard,
       gradient: "bg-gradient-accent",
       delay: "450ms"
     },
     {
       id: "aim" as TestType,
-      title: "Precizitātes treniņš",
+      title: language === "lv" ? "Precizitātes treniņš" : "Aim trainer",
       description: "W.I.P",
       icon: Crosshair,
       gradient: "bg-gradient-primary",
@@ -312,8 +341,8 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
     },
     {
       id: "stroop" as TestType,
-      title: "Stroop krāsu-vārdu tests",
-      description: "Nosaki krāsu, nevis vārdu!",
+      title: language === "lv" ? "Stroop krāsu-vārdu tests" : "Stroop color-word test",
+      description: language === "lv" ? "Nosaki krāsu, nevis vārdu!" : "Identify the color, not the word!",
       icon: Palette,
       gradient: "bg-gradient-accent",
       delay: "750ms"
@@ -321,18 +350,18 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 xl:pr-[420px] xl:ml-[740px]">
       <aside className="hidden xl:block fixed right-5 top-24 w-[380px] z-20">
         <Card className="bg-gradient-card border-border/50 animate-fade-in-up">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Trophy className="w-5 h-5 text-cognitive-accent" />
-              Leaderboard
+              {t.leaderboard}
             </CardTitle>
-            <CardDescription>Labākie rezultāti pēc testa tipa</CardDescription>
+            <CardDescription>{t.bestByType}</CardDescription>
             <Select value={selectedLeaderboardTest} onValueChange={(value) => setSelectedLeaderboardTest(value as LeaderboardTestType)}>
               <SelectTrigger>
-                <SelectValue placeholder="Izvēlies testu" />
+                <SelectValue placeholder={t.selectTest} />
               </SelectTrigger>
               <SelectContent>
                 {leaderboardTestOptions.map((option) => (
@@ -343,9 +372,9 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
           </CardHeader>
           <CardContent>
             {leaderboardLoading ? (
-              <p className="text-sm text-muted-foreground">Ielādē leaderboard...</p>
+              <p className="text-sm text-muted-foreground">{t.loadingLeaderboard}</p>
             ) : leaderboardRows.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Vēl nav rezultātu šim testam.</p>
+              <p className="text-sm text-muted-foreground">{t.noLeaderboardResults}</p>
             ) : (
               <div className="space-y-2.5 max-h-[68vh] overflow-y-auto pr-1">
                 {leaderboardRows.map((row, index) => {
@@ -360,7 +389,7 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
                         <div className="min-w-0 pr-2">
                           <p className="font-semibold text-sm leading-tight truncate">
                             #{index + 1} {row.username}
-                            {isCurrentUser ? ' (Tu)' : ''}
+                            {isCurrentUser ? ` ${t.you}` : ''}
                           </p>
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {new Date(row.last_played_at).toLocaleDateString()}
@@ -393,24 +422,25 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
 
       {/* Header with Auth Buttons */}
       <header className="text-center mb-12 animate-fade-in-up">
-        <div className="flex justify-end gap-3 mb-6">
+        <div className="flex justify-end items-center gap-3 mb-6">
           {user ? (
             <>
               <Button onClick={() => navigate("/dashboard")} variant="secondary">
                 <BarChart3 className="w-4 h-4 mr-2" />
-                Panelis
+                {t.dashboard}
               </Button>
               <Button onClick={() => navigate("/profile")} variant="secondary">
                 <User className="w-4 h-4 mr-2" />
-                Profils
+                {t.profile}
               </Button>
             </>
           ) : (
             <Button onClick={() => navigate("/auth")} className="bg-cognitive-primary hover:bg-cognitive-primary/80">
               <User className="w-4 h-4 mr-2" />
-              Pieteikties
+              {t.signIn}
             </Button>
           )}
+          <LanguageSwitch />
         </div>
         
         <div className="flex items-center justify-center gap-3 mb-4">
@@ -420,7 +450,7 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
           </h1>
         </div>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Trenē savas kognitīvās spējas ar izstrādātiem testiem, kas paredzēti, lai pārbaudītu tavas spējas!
+          {t.hero}
         </p>
       </header>
 
@@ -452,7 +482,7 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
                   variant="secondary" 
                   className="w-full group-hover:bg-cognitive-accent group-hover:text-cognitive-accent-foreground transition-all duration-300"
                 >
-                  {test.disabled ? "W.I.P" : "Sākt!"}
+                  {test.disabled ? "W.I.P" : t.start}
                 </Button>
               </CardContent>
             </Card>
@@ -466,23 +496,23 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-cognitive-success" />
-              Jaunākās aktivitātes
+              {t.recentActivity}
             </CardTitle>
-            <CardDescription>Tavi jaunākie testa rezultāti</CardDescription>
+            <CardDescription>{t.latestResults}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {results.map((result) => (
                 <div key={result.id} className="flex justify-between items-center p-3 rounded-lg bg-muted/20">
                   <div>
-                    <p className="font-medium capitalize">{translateTestType(result.test_type)}</p>
+                    <p className="font-medium capitalize">{translateTestType(result.test_type, language)}</p>
                     <p className="text-sm text-muted-foreground">
                       {new Date(result.created_at).toLocaleString()}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-cognitive-primary">{result.score}</p>
-                    <p className="text-xs text-muted-foreground">Rezultāts</p>
+                    <p className="text-xs text-muted-foreground">{t.score}</p>
                   </div>
                 </div>
               ))}
@@ -496,12 +526,12 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Trophy className="w-5 h-5 text-cognitive-accent" />
-              Leaderboard
+              {t.leaderboard}
             </CardTitle>
-            <CardDescription>Labākie rezultāti pēc testa tipa</CardDescription>
+            <CardDescription>{t.bestByType}</CardDescription>
             <Select value={selectedLeaderboardTest} onValueChange={(value) => setSelectedLeaderboardTest(value as LeaderboardTestType)}>
               <SelectTrigger>
-                <SelectValue placeholder="Izvēlies testu" />
+                <SelectValue placeholder={t.selectTest} />
               </SelectTrigger>
               <SelectContent>
                 {leaderboardTestOptions.map((option) => (
@@ -512,9 +542,9 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
           </CardHeader>
           <CardContent>
             {leaderboardLoading ? (
-              <p className="text-sm text-muted-foreground">Ielādē leaderboard...</p>
+              <p className="text-sm text-muted-foreground">{t.loadingLeaderboard}</p>
             ) : leaderboardRows.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Vēl nav rezultātu šim testam.</p>
+              <p className="text-sm text-muted-foreground">{t.noLeaderboardResults}</p>
             ) : (
               <div className="space-y-2.5">
                 {leaderboardRows.map((row, index) => {
@@ -529,7 +559,7 @@ const Dashboard = ({ onStartTest }: { onStartTest: (test: TestType) => void }) =
                         <div className="min-w-0 pr-2">
                           <p className="font-semibold text-sm leading-tight truncate">
                             #{index + 1} {row.username}
-                            {isCurrentUser ? ' (Tu)' : ''}
+                            {isCurrentUser ? ` ${t.you}` : ''}
                           </p>
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {new Date(row.last_played_at).toLocaleDateString()}

@@ -8,6 +8,7 @@
 import { apiRequest } from '@/lib/api';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
+import { useLanguage } from './useLanguage';
 
 // Definē metadata tipu
 interface TestMetadata {
@@ -49,6 +50,7 @@ export const useTestResults = () => {
   const { user } = useAuth();
   // Iegūst toast funkciju paziņojumiem
   const { toast } = useToast();
+  const { language } = useLanguage();
 
   // Funkcija testa rezultāta saglabāšanai
   const saveTestResult = async (
@@ -85,8 +87,11 @@ export const useTestResults = () => {
       const apiError = error as ApiError;
       console.error('Error saving test result:', apiError.message || error);
       toast({
-        title: "Kļūda saglabājot rezultātu",
-        description: "Tavs tests tika pabeigts, bet rezultātu neizdevās saglabāt.",
+        title: language === "lv" ? "Kļūda saglabājot rezultātu" : "Error saving result",
+        description:
+          language === "lv"
+            ? "Tavs tests tika pabeigts, bet rezultātu neizdevās saglabāt."
+            : "Your test was completed, but the result could not be saved.",
         variant: "destructive"
       });
     }

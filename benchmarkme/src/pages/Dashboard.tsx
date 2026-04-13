@@ -15,19 +15,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 // Importē autentifikācijas hook un API utilītiju
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/api";
+import { useLanguage } from "@/hooks/useLanguage";
+import LanguageSwitch from "@/components/LanguageSwitch";
 
-// Tulkojums jo stulbais db
-const translateTestType = (testType: string): string => {
-  const translations: Record<string, string> = {
-    'reaction': 'Reakcijas Laiks',
-    'memory': 'Vizuālā Atmiņa',
-    'number_memory': 'Skaitļu Atmiņa',
-    'number-memory': 'Skaitļu Atmiņa',
-    'typing': 'Rakstīšanas Ātrums',
-    'aim': 'Precizitātes Treniņš',
-    'stroop': 'Stroop Krāsu-Vārdu Tests'
+const translateTestType = (testType: string, language: "lv" | "en"): string => {
+  const translations: Record<string, { lv: string; en: string }> = {
+    reaction: { lv: "Reakcijas Laiks", en: "Reaction Time" },
+    memory: { lv: "Vizuālā Atmiņa", en: "Visual Memory" },
+    number_memory: { lv: "Skaitļu Atmiņa", en: "Number Memory" },
+    "number-memory": { lv: "Skaitļu Atmiņa", en: "Number Memory" },
+    typing: { lv: "Rakstīšanas Ātrums", en: "Typing Speed" },
+    aim: { lv: "Precizitātes Treniņš", en: "Aim Trainer" },
+    stroop: { lv: "Stroop Krāsu-Vārdu Tests", en: "Stroop Color-Word Test" },
   };
-  return translations[testType] || testType.replace(/_/g, ' ');
+  const translation = translations[testType];
+  return translation ? translation[language] : testType.replace(/_/g, " ");
 };
 
 // Testa rezultāta datu struktūra
@@ -42,10 +44,38 @@ interface TestResult {
 // Pārskatu panelis - parāda lietotāja testa rezultātus un statistiku
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
+  const { language } = useLanguage();
   const navigate = useNavigate();
   // Saglabā visus testa rezultātus un ielādes stāvokli
   const [results, setResults] = useState<TestResult[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const t = {
+    loading: language === "lv" ? "Ielādē tavu paneli..." : "Loading your dashboard...",
+    title: language === "lv" ? "Rezultātu panelis" : "Results Dashboard",
+    profile: language === "lv" ? "Profils" : "Profile",
+    takeTests: language === "lv" ? "Veikt testus" : "Take tests",
+    totalTests: language === "lv" ? "Kopā testi" : "Total tests",
+    thisWeek: language === "lv" ? "Šonedēļ" : "This week",
+    testTypes: language === "lv" ? "Testu veidi" : "Test types",
+    testResults: language === "lv" ? "Testu rezultāti" : "Test Results",
+    resultsSubtitle:
+      language === "lv"
+        ? "Seko saviem rezultātiem dažādos testos!"
+        : "Track your results across different tests!",
+    noTests:
+      language === "lv"
+        ? "Vēl nav veikti testi. Sāc testēšanu, lai redzētu savus rezultātus!"
+        : "No tests completed yet. Start testing to see your results!",
+    firstTest: language === "lv" ? "Veikt pirmo testu" : "Take your first test",
+    lastPlayed: language === "lv" ? "Pēdējoreiz spēlēts" : "Last played",
+    completedTests: language === "lv" ? "Veikti testi" : "Completed tests",
+    averageScore: language === "lv" ? "Vidējais rezultāts" : "Average score",
+    bestScore: language === "lv" ? "Labākais rezultāts" : "Best score",
+    recentActivity: language === "lv" ? "Jaunākās aktivitātes" : "Recent Activity",
+    recentSubtitle: language === "lv" ? "Tavi jaunākie testa rezultāti" : "Your latest test results",
+    score: language === "lv" ? "Rezultāts" : "Score",
+  };
 
   // Ielādē lietotāja testa rezultātus, kad komponente tiek ielādēta
   useEffect(() => {
@@ -146,27 +176,33 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Ielādē tavu paneli...</div>
+        <div className="text-lg">{t.loading}</div>
+        <div className="fixed right-4 top-4 z-20">
+          <LanguageSwitch />
+        </div>
       </div>
     );
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <div className="fixed right-4 top-4 z-20">
+        <LanguageSwitch />
+      </div>
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <Brain className="w-8 h-8 text-cognitive-primary" />
-            <h1 className="text-4xl font-bold">Rezultātu panelis</h1>
+            <h1 className="text-4xl font-bold">{t.title}</h1>
           </div>
           <div className="flex gap-3">
             <Button onClick={() => navigate("/profile")} variant="secondary">
               <User className="w-4 h-4 mr-2" />
-              Profils
+              {t.profile}
             </Button>
             <Button onClick={() => navigate("/")} className="bg-cognitive-primary hover:bg-cognitive-primary/80">
-              Veikt testus
+              {t.takeTests}
             </Button>
           </div>
         </div>
@@ -177,7 +213,7 @@ const Dashboard = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Kopā testi</p>
+                  <p className="text-sm text-muted-foreground">{t.totalTests}</p>
                   <p className="text-3xl font-bold text-cognitive-primary">{totalTests}</p>
                 </div>
                 <Award className="w-10 h-10 text-cognitive-primary opacity-50" />
@@ -189,7 +225,7 @@ const Dashboard = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Šonedēļ</p>
+                  <p className="text-sm text-muted-foreground">{t.thisWeek}</p>
                   <p className="text-3xl font-bold text-cognitive-accent">{testsThisWeek}</p>
                 </div>
                 <Calendar className="w-10 h-10 text-cognitive-accent opacity-50" />
@@ -201,7 +237,7 @@ const Dashboard = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Testu veidi</p>
+                  <p className="text-sm text-muted-foreground">{t.testTypes}</p>
                   <p className="text-3xl font-bold text-cognitive-success">{stats.length}</p>
                 </div>
                 <TrendingUp className="w-10 h-10 text-cognitive-success opacity-50" />
@@ -213,15 +249,15 @@ const Dashboard = () => {
         {/* Test Performance Cards */}
         <Card className="bg-gradient-card border-border/50">
           <CardHeader>
-            <CardTitle>Testu rezultāti</CardTitle>
-            <CardDescription>Seko saviem rezultātiem dažādos testos!</CardDescription>
+            <CardTitle>{t.testResults}</CardTitle>
+            <CardDescription>{t.resultsSubtitle}</CardDescription>
           </CardHeader>
           <CardContent>
             {stats.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-muted-foreground">Vēl nav veikti testi. Sāc testēšanu, lai redzētu savus rezultātus!</p>
+                <p className="text-muted-foreground">{t.noTests}</p>
                 <Button onClick={() => navigate("/")} className="mt-4 bg-cognitive-primary hover:bg-cognitive-primary/80">
-                  Veikt pirmo testu
+                  {t.firstTest}
                 </Button>
               </div>
             ) : (
@@ -231,10 +267,10 @@ const Dashboard = () => {
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <h3 className="font-semibold text-lg capitalize">
-                          {translateTestType(stat.testType)}
+                          {translateTestType(stat.testType, language)}
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          Pēdējoreiz spēlēts: {new Date(stat.latestDate).toLocaleDateString()}
+                          {t.lastPlayed}: {new Date(stat.latestDate).toLocaleDateString()}
                         </p>
                       </div>
                       <div className={`flex items-center gap-1 px-3 py-1 rounded-full ${
@@ -251,15 +287,15 @@ const Dashboard = () => {
                     
                     <div className="grid grid-cols-3 gap-4 mt-3">
                       <div>
-                        <p className="text-xs text-muted-foreground">Veikti testi</p>
+                        <p className="text-xs text-muted-foreground">{t.completedTests}</p>
                         <p className="text-xl font-bold">{stat.count}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">Vidējais rezultāts</p>
+                        <p className="text-xs text-muted-foreground">{t.averageScore}</p>
                         <p className="text-xl font-bold text-cognitive-accent">{stat.averageScore}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">Labākais rezultāts</p>
+                        <p className="text-xs text-muted-foreground">{t.bestScore}</p>
                         <p className="text-xl font-bold text-cognitive-success">{stat.bestScore}{stat.scoreSuffix}</p>
                       </div>
                     </div>
@@ -273,22 +309,22 @@ const Dashboard = () => {
         {/* Recent Activity */}
         <Card className="bg-gradient-card border-border/50">
           <CardHeader>
-            <CardTitle>Jaunākās aktivitātes</CardTitle>
-            <CardDescription>Tavi jaunākie testa rezultāti</CardDescription>
+            <CardTitle>{t.recentActivity}</CardTitle>
+            <CardDescription>{t.recentSubtitle}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {results.slice(0, 10).map((result) => (
                 <div key={result.id} className="flex justify-between items-center p-3 rounded-lg bg-muted/20">
                   <div>
-                    <p className="font-medium capitalize">{translateTestType(result.test_type)}</p>
+                    <p className="font-medium capitalize">{translateTestType(result.test_type, language)}</p>
                     <p className="text-sm text-muted-foreground">
                       {new Date(result.created_at).toLocaleString()}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-cognitive-primary">{result.score}</p>
-                    <p className="text-xs text-muted-foreground">Rezultāts</p>
+                    <p className="text-xs text-muted-foreground">{t.score}</p>
                   </div>
                 </div>
               ))}

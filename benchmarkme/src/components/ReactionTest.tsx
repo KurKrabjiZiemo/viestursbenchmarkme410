@@ -18,13 +18,14 @@ import { useTestResults } from "@/hooks/useTestResults";
 // Komponentes rekvizīti
 interface ReactionTestProps {
   onBack: () => void; // Funkcija atgriešanās uz sākumlapu
+  language: "lv" | "en";
 }
 
 // Testa stāvokļa tipi
 type TestState = "ready" | "waiting" | "active" | "complete" | "early";
 
 // Reakcijas laika testa komponente
-const ReactionTest = ({ onBack }: ReactionTestProps) => {
+const ReactionTest = ({ onBack, language }: ReactionTestProps) => {
   // Iegūst funkciju rezultātu saglabāšanai
   const { saveTestResult } = useTestResults();
   
@@ -33,6 +34,34 @@ const ReactionTest = ({ onBack }: ReactionTestProps) => {
   const [reactionTime, setReactionTime] = useState<number | null>(null); // Pēdējais reakcijas laiks
   const [attempts, setAttempts] = useState<number[]>([]); // Visi mēģinājumi
   const [countdown, setCountdown] = useState<number | null>(null); // Atpakaļskaitīšanas skaitlis
+
+  const t = {
+    back: language === "lv" ? "Atpakaļ" : "Back",
+    title: language === "lv" ? "Reakcijas Laika Tests" : "Reaction Time Test",
+    readyTitle: language === "lv" ? "Nospied Sākt, lai sāktu" : "Press Start to begin",
+    prep: language === "lv" ? "Sagatavojies..." : "Get ready...",
+    wait: language === "lv" ? "Gaidi..." : "Wait...",
+    click: language === "lv" ? "SPIED!" : "CLICK!",
+    yourResult: language === "lv" ? "Tavs rezultāts" : "Your result",
+    tooEarly: language === "lv" ? "Par agru!" : "Too early!",
+    readyDescription:
+      language === "lv"
+        ? "Pārbaudi savu reakcijas ātrumu, nospiežot, kad ekrāns mainās"
+        : "Test your reaction speed by clicking when the screen changes",
+    waitingDescription: language === "lv" ? "Nenospied, kamēr nav zaļš" : "Do not click until it turns green",
+    activeDescription: language === "lv" ? "Ātri! Nospied, cik vari ātri" : "Quick! Click as fast as you can",
+    earlyDescription: language === "lv" ? "Gaidi zaļo lauku pirms nospiešanas" : "Wait for the green area before clicking",
+    start: language === "lv" ? "Sākt" : "Start",
+    clickAgain: language === "lv" ? "Klikšķini, lai mēģinātu vēlreiz!" : "Click to try again!",
+    tryAgainShort: language === "lv" ? "Mēģinam vēlreiz?" : "Try again?",
+    results: language === "lv" ? "Tavi Rezultāti" : "Your Results",
+    resultsDescription: language === "lv" ? "Snieguma vēsture un statistika" : "Performance history and stats",
+    attempts: language === "lv" ? "Mēģinājumi" : "Attempts",
+    average: language === "lv" ? "Vidējais" : "Average",
+    best: language === "lv" ? "Labākais" : "Best",
+    worst: language === "lv" ? "Sliktākais" : "Worst",
+    latestAttempts: language === "lv" ? "Jaunākie Mēģinājumi:" : "Latest Attempts:",
+  };
   
   // Atsauces precīzai laika mērīšanai
   const startTimeRef = useRef<number>(0); // Testa sākuma laiks
@@ -125,10 +154,10 @@ const ReactionTest = ({ onBack }: ReactionTestProps) => {
 
   // Novērtē sniegumu pēc reakcijas laika
   const getPerformanceRating = (time: number) => {
-    if (time < 200) return { text: "Izcili", color: "text-cognitive-success" };
-    if (time < 250) return { text: "Labi", color: "text-cognitive-accent" };
-    if (time < 300) return { text: "Vidēji", color: "text-cognitive-warning" };
-    return { text: "Nepieciešama prakse", color: "text-destructive" };
+    if (time < 200) return { text: language === "lv" ? "Izcili" : "Excellent", color: "text-cognitive-success" };
+    if (time < 250) return { text: language === "lv" ? "Labi" : "Good", color: "text-cognitive-accent" };
+    if (time < 300) return { text: language === "lv" ? "Vidēji" : "Average", color: "text-cognitive-warning" };
+    return { text: language === "lv" ? "Nepieciešama prakse" : "Needs practice", color: "text-destructive" };
   };
 
   // Notīra taimerus, kad komponente tiek noņemta
@@ -155,11 +184,11 @@ const ReactionTest = ({ onBack }: ReactionTestProps) => {
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Atpakaļ
+            {t.back}
           </Button>
           <div className="flex items-center gap-2">
             <Zap className="w-6 h-6 text-cognitive-primary" />
-            <h1 className="text-3xl font-bold">Reakcijas Laika Tests</h1>
+            <h1 className="text-3xl font-bold">{t.title}</h1>
           </div>
         </div>
 
@@ -167,18 +196,18 @@ const ReactionTest = ({ onBack }: ReactionTestProps) => {
         <Card className="mb-8 bg-gradient-card border-border/50">
           <CardHeader className="text-center">
             <CardTitle>
-              {testState === "ready" && "Nospied Sākt, lai sāktu"}
-              {testState === "waiting" && countdown && `Sagatavojies... ${countdown}`}
-              {testState === "waiting" && !countdown && "Gaidi..."}
-              {testState === "active" && "SPIED!"}
-              {testState === "complete" && "Tavs rezultāts"}
-              {testState === "early" && "Par agru!"}
+              {testState === "ready" && t.readyTitle}
+              {testState === "waiting" && countdown && `${t.prep} ${countdown}`}
+              {testState === "waiting" && !countdown && t.wait}
+              {testState === "active" && t.click}
+              {testState === "complete" && t.yourResult}
+              {testState === "early" && t.tooEarly}
             </CardTitle>
             <CardDescription>
-              {testState === "ready" && "Pārbaudi savu reakcijas ātrumu, nospiežot, kad ekrāns mainās"}
-              {testState === "waiting" && "Nenospied, kamēr nav zaļš"}
-              {testState === "active" && "Ātri! Nospied, cik vari ātri"}
-              {testState === "early" && "Gaidi zaļo lauku pirms nospiešanas"}
+              {testState === "ready" && t.readyDescription}
+              {testState === "waiting" && t.waitingDescription}
+              {testState === "active" && t.activeDescription}
+              {testState === "early" && t.earlyDescription}
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
@@ -193,9 +222,9 @@ const ReactionTest = ({ onBack }: ReactionTestProps) => {
               `}
               onClick={handleClick}
             >
-              {testState === "ready" && "Sākt"}
-              {testState === "waiting" && "Gaidi..."}
-              {testState === "active" && "NOSPIED!"}
+              {testState === "ready" && t.start}
+              {testState === "waiting" && t.wait}
+              {testState === "active" && t.click}
               {testState === "complete" &&  
               (
                 <div className="text-center">
@@ -206,11 +235,11 @@ const ReactionTest = ({ onBack }: ReactionTestProps) => {
                     {getPerformanceRating(reactionTime!).text}
                   </div>
                   <div className="text-base mt-4 opacity-70">
-                    Klikšķini, lai mēģinātu vēlreiz!
+                    {t.clickAgain}
                   </div>
                 </div>
               )}
-              {testState === "early" && "Mēģinam vēlreiz?"}
+              {testState === "early" && t.tryAgainShort}
             </div>
           </CardContent>
         </Card>
@@ -219,31 +248,31 @@ const ReactionTest = ({ onBack }: ReactionTestProps) => {
         {attempts.length > 0 && (
           <Card className="bg-gradient-card border-border/50">
             <CardHeader>
-              <CardTitle>Tavi Rezultāti</CardTitle>
-              <CardDescription>Snieguma vēsture un statistika</CardDescription>
+              <CardTitle>{t.results}</CardTitle>
+              <CardDescription>{t.resultsDescription}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div className="space-y-1">
                   <div className="text-2xl font-bold text-cognitive-accent">{attempts.length}</div>
-                  <div className="text-sm text-muted-foreground">Mēģinājumi</div>
+                  <div className="text-sm text-muted-foreground">{t.attempts}</div>
                 </div>
                 <div className="space-y-1">
                   <div className="text-2xl font-bold text-cognitive-primary">{getAverageTime()}ms</div>
-                  <div className="text-sm text-muted-foreground">Vidējais</div>
+                  <div className="text-sm text-muted-foreground">{t.average}</div>
                 </div>
                 <div className="space-y-1">
                   <div className="text-2xl font-bold text-cognitive-success">{Math.min(...attempts)}ms</div>
-                  <div className="text-sm text-muted-foreground">Labākais</div>
+                  <div className="text-sm text-muted-foreground">{t.best}</div>
                 </div>
                 <div className="space-y-1">
                   <div className="text-2xl font-bold text-muted-foreground">{Math.max(...attempts)}ms</div>
-                  <div className="text-sm text-muted-foreground">Sliktākais</div>
+                  <div className="text-sm text-muted-foreground">{t.worst}</div>
                 </div>
               </div>
               
               <div className="mt-6">
-                <h4 className="font-semibold mb-2">Jaunākie Mēģinājumi:</h4>
+                <h4 className="font-semibold mb-2">{t.latestAttempts}</h4>
                 <div className="flex flex-wrap gap-2">
                   {attempts.slice(-10).map((time, index) => (
                     <span 

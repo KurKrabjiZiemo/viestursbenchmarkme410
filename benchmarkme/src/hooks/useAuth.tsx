@@ -8,6 +8,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { apiRequest, setToken, removeToken, getToken } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/hooks/useLanguage';
 
 // Lietotāja tips
 interface User {
@@ -34,6 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { language } = useLanguage();
 
   // Pārbauda sesiju pie ielādes
   useEffect(() => {
@@ -76,15 +78,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(data.user);
 
       toast({
-        title: "Veiksmīgi!",
-        description: "Konts izveidots veiksmīgi. Tu esi ielogojies.",
+        title: language === "lv" ? "Veiksmīgi!" : "Success!",
+        description:
+          language === "lv"
+            ? "Konts izveidots veiksmīgi. Tu esi ielogojies."
+            : "Account created successfully. You are now signed in.",
       });
 
       return { error: null };
     } catch (error) {
       const err = error as Error;
       toast({
-        title: "Reģistrācijas Kļūda",
+        title: language === "lv" ? "Reģistrācijas Kļūda" : "Sign up error",
         description: err.message,
         variant: "destructive"
       });
@@ -105,15 +110,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(data.user);
 
       toast({
-        title: "Laipni lūdzam atpakaļ!",
-        description: "Tu esi veiksmīgi ielogojies.",
+        title: language === "lv" ? "Laipni lūdzam atpakaļ!" : "Welcome back!",
+        description: language === "lv" ? "Tu esi veiksmīgi ielogojies." : "You have signed in successfully.",
       });
 
       return { error: null };
     } catch (error) {
       const err = error as Error;
       toast({
-        title: "Ielogošanās Kļūda",
+        title: language === "lv" ? "Ielogošanās Kļūda" : "Sign in error",
         description: err.message,
         variant: "destructive"
       });
@@ -135,8 +140,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       
       toast({
-        title: "Izrakstījies",
-        description: "Tu esi veiksmīgi izrakstījies.",
+        title: language === "lv" ? "Izrakstījies" : "Signed out",
+        description: language === "lv" ? "Tu esi veiksmīgi izrakstījies." : "You have signed out successfully.",
       });
     }
   };
