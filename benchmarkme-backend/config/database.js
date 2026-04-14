@@ -26,6 +26,11 @@ const ensureSchema = async () => {
       `ALTER TABLE users
        ADD COLUMN IF NOT EXISTS username VARCHAR(50) NULL UNIQUE AFTER email`
     );
+
+    await pool.query(
+      `ALTER TABLE users
+       ADD COLUMN IF NOT EXISTS profile_picture LONGTEXT NULL AFTER username`
+    );
   } catch (error) {
     console.error('Kļūda atjaunojot users shēmu:', error.message);
   }

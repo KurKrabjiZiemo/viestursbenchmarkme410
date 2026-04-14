@@ -15,6 +15,7 @@ interface User {
   id: number;
   email: string;
   username: string | null;
+  profile_picture: string | null;
   created_at: string;
 }
 
@@ -24,6 +25,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, username: string) => Promise<{ error: Error | null }>;
   signIn: (identifier: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  updateUser: (nextUser: User) => void;
   loading: boolean;
 }
 
@@ -146,8 +148,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const updateUser = (nextUser: User) => {
+    setUser(nextUser);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, signUp, signIn, signOut, loading }}>
+    <AuthContext.Provider value={{ user, signUp, signIn, signOut, updateUser, loading }}>
       {children}
     </AuthContext.Provider>
   );
