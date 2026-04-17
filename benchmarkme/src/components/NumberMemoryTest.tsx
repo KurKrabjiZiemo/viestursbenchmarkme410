@@ -15,6 +15,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 // Importē hook rezultātu saglabāšanai
 import { useTestResults } from "@/hooks/useTestResults";
+import LanguageSwitch from "@/components/LanguageSwitch";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // Komponentes rekvizīti
 interface NumberMemoryTestProps {
@@ -182,6 +184,10 @@ const NumberMemoryTest = ({ onBack, language }: NumberMemoryTestProps) => {
           <div className="flex items-center gap-2">
             <Hash className="w-6 h-6 text-cognitive-primary" />
             <h1 className="text-3xl font-bold">{t.title}</h1>
+          </div>
+          <div className="flex items-center gap-2 ml-auto">
+            <ThemeToggle />
+            <LanguageSwitch />
           </div>
         </div>
 

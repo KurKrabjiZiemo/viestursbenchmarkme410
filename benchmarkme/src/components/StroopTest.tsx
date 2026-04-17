@@ -10,6 +10,8 @@ import { ArrowLeft, Play, RotateCcw, Palette, CheckCircle2, XCircle } from "luci
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTestResults } from "@/hooks/useTestResults";
+import LanguageSwitch from "@/components/LanguageSwitch";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface StroopTestProps {
   onBack: () => void;
@@ -188,6 +190,10 @@ const StroopTest = ({ onBack, language }: StroopTestProps) => {
           <div className="flex items-center gap-2">
             <Palette className="w-6 h-6 text-cognitive-primary" />
             <h1 className="text-3xl font-bold">{t.title}</h1>
+          </div>
+          <div className="flex items-center gap-2 ml-auto">
+            <ThemeToggle />
+            <LanguageSwitch />
           </div>
         </div>
 
