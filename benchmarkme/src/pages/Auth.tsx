@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import LanguageSwitch from "@/components/LanguageSwitch";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // Autentifikācijas lapa - pieteikšanās un reģistrācija
 const Auth = () => {
@@ -49,6 +50,11 @@ const Auth = () => {
       language === "lv"
         ? "Lietotājvārdam jābūt no 3 līdz 50 rakstzīmēm"
         : "Username must be between 3 and 50 characters",
+    invalidPasswordTitle: language === "lv" ? "Nederīga Parole" : "Invalid password",
+    invalidPasswordDescription:
+      language === "lv"
+        ? "Parolei jābūt vismaz 8 rakstzīmēm, vienam ciparam un vienam simbolam"
+        : "Password must be at least 8 characters and contain at least one number and one symbol",
     title: language === "lv" ? "Kognitīvie Testi" : "Cognitive Tests",
     subtitle:
       language === "lv"
@@ -114,6 +120,16 @@ const Auth = () => {
       return;
     }
 
+    const passwordRegex = /^(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      toast({
+        title: t.invalidPasswordTitle,
+        description: t.invalidPasswordDescription,
+        variant: "destructive"
+      });
+      return;
+    }
+
     const trimmedUsername = username.trim();
     if (trimmedUsername.length < 3 || trimmedUsername.length > 50) {
       toast({
@@ -131,7 +147,8 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-cognitive-primary/5">
-      <div className="fixed right-4 top-4 z-20">
+      <div className="fixed right-4 top-4 z-20 flex gap-2">
+        <ThemeToggle />
         <LanguageSwitch />
       </div>
       <Card className="w-full max-w-md bg-gradient-card border-border/50">
@@ -221,8 +238,6 @@ const Auth = () => {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
                   />
                 </div>
                 <Button 

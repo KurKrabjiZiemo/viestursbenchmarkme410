@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/api";
 import { useLanguage } from "@/hooks/useLanguage";
 import LanguageSwitch from "@/components/LanguageSwitch";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const translateTestType = (testType: string, language: "lv" | "en"): string => {
   const translations: Record<string, { lv: string; en: string }> = {
@@ -177,7 +178,8 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-lg">{t.loading}</div>
-        <div className="fixed right-4 top-4 z-20">
+        <div className="fixed right-4 top-4 z-20 flex gap-2">
+          <ThemeToggle />
           <LanguageSwitch />
         </div>
       </div>
@@ -186,12 +188,13 @@ const Dashboard = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="fixed right-4 top-4 z-20">
+      <div className="fixed right-4 top-4 z-20 flex gap-2">
+        <ThemeToggle />
         <LanguageSwitch />
       </div>
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center animate-fade-in-up" style={{ animationDelay: "0ms" }}>
           <div className="flex items-center gap-3">
             <Brain className="w-8 h-8 text-cognitive-primary" />
             <h1 className="text-4xl font-bold">{t.title}</h1>
@@ -209,7 +212,7 @@ const Dashboard = () => {
 
         {/* Overview Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-gradient-card border-border/50">
+          <Card className="bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -221,7 +224,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-card border-border/50">
+          <Card className="bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -233,7 +236,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-card border-border/50">
+          <Card className="bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -247,7 +250,7 @@ const Dashboard = () => {
         </div>
 
         {/* Test Performance Cards */}
-        <Card className="bg-gradient-card border-border/50">
+        <Card className="bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "400ms" }}>
           <CardHeader>
             <CardTitle>{t.testResults}</CardTitle>
             <CardDescription>{t.resultsSubtitle}</CardDescription>
@@ -307,7 +310,7 @@ const Dashboard = () => {
         </Card>
 
         {/* Recent Activity */}
-        <Card className="bg-gradient-card border-border/50">
+        <Card className="bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "500ms" }}>
           <CardHeader>
             <CardTitle>{t.recentActivity}</CardTitle>
             <CardDescription>{t.recentSubtitle}</CardDescription>

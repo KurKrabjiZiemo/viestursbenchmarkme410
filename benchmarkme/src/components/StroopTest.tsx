@@ -258,7 +258,7 @@ const StroopTest = ({ onBack, language }: StroopTestProps) => {
                     <Button
                       key={color.key}
                       onClick={() => handleAnswer(color.key)}
-                      className={`${color.buttonClass} text-white font-semibold`}
+                      className={`${color.buttonClass} text-foreground font-semibold`}
                     >
                       {getColorLabel(color.key)}
                     </Button>

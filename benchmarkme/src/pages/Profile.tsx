@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, setToken } from "@/lib/api";
 import { useLanguage } from "@/hooks/useLanguage";
 import LanguageSwitch from "@/components/LanguageSwitch";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // Profila datu interfeiss
 interface Profile {
@@ -426,7 +427,8 @@ const Profile = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-lg">{t.loading}</div>
-        <div className="fixed right-4 top-4 z-20">
+        <div className="fixed right-4 top-4 z-20 flex gap-2">
+          <ThemeToggle />
           <LanguageSwitch />
         </div>
       </div>
@@ -435,11 +437,12 @@ const Profile = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="fixed right-4 top-4 z-20">
+      <div className="fixed right-4 top-4 z-20 flex gap-2">
+        <ThemeToggle />
         <LanguageSwitch />
       </div>
       <div className="max-w-2xl mx-auto">
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-8 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
           <Button 
             variant="secondary" 
             size="sm" 
@@ -460,7 +463,7 @@ const Profile = () => {
           </Button>
         </div>
 
-        <Card className="bg-gradient-card border-border/50">
+        <Card className="bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               <button
@@ -486,7 +489,7 @@ const Profile = () => {
           </CardHeader>
           <CardContent className="space-y-8">
             {activeEditor === "picture" && (
-              <form onSubmit={handlePictureSubmit} className="space-y-4 rounded-xl border border-border/50 p-4">
+              <form onSubmit={handlePictureSubmit} className="animate-in fade-in-0 slide-in-from-top-2 duration-200 space-y-4 rounded-xl border border-border/50 p-4">
                 <div className="space-y-3">
                   <Label htmlFor="profile-picture">{t.profilePicture}</Label>
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -531,7 +534,7 @@ const Profile = () => {
                   </Button>
                 </div>
                 {activeEditor === "email" && (
-                  <form onSubmit={handleEmailSubmit} className="mt-4 space-y-4 border-t border-border/50 pt-4">
+                  <form onSubmit={handleEmailSubmit} className="animate-in fade-in-0 slide-in-from-top-2 duration-200 mt-4 space-y-4 border-t border-border/50 pt-4">
                     <p className="text-sm text-muted-foreground">{t.emailSettingsDescription}</p>
                     <div className="space-y-2">
                       <Label htmlFor="new-email">{t.newEmail}</Label>
@@ -577,7 +580,7 @@ const Profile = () => {
                   </Button>
                 </div>
                 {activeEditor === "username" && (
-                  <form onSubmit={handleProfileSubmit} className="mt-4 space-y-4 border-t border-border/50 pt-4">
+                  <form onSubmit={handleProfileSubmit} className="animate-in fade-in-0 slide-in-from-top-2 duration-200 mt-4 space-y-4 border-t border-border/50 pt-4">
                     <div className="space-y-2">
                       <Label htmlFor="username">{t.username}</Label>
                       <Input
@@ -613,7 +616,7 @@ const Profile = () => {
                   </Button>
                 </div>
                 {activeEditor === "password" && (
-                  <form onSubmit={handlePasswordSubmit} className="mt-4 space-y-4 border-t border-border/50 pt-4">
+                  <form onSubmit={handlePasswordSubmit} className="animate-in fade-in-0 slide-in-from-top-2 duration-200 mt-4 space-y-4 border-t border-border/50 pt-4">
                     <p className="text-sm text-muted-foreground">{t.passwordSettingsDescription}</p>
                     <div className="space-y-2">
                       <Label htmlFor="current-password">{t.currentPassword}</Label>

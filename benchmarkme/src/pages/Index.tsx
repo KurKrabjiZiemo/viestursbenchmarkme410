@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/api";
 import { useLanguage } from "@/hooks/useLanguage";
 import LanguageSwitch from "@/components/LanguageSwitch";
+import ThemeToggle from "@/components/ThemeToggle";
 import ReactionTest from "@/components/ReactionTest";
 import MemoryTest from "@/components/MemoryTest";
 import NumberMemoryTest from "@/components/NumberMemoryTest";
@@ -440,6 +441,7 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
               {t.signIn}
             </Button>
           )}
+          <ThemeToggle />
           <LanguageSwitch />
         </div>
         
@@ -492,7 +494,7 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
 
       {/* Recent Activity */}
       {user && results.length > 0 && (
-        <Card className="max-w-2xl mx-auto bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
+        <Card className="max-w-2xl mx-auto bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "0ms" }}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-cognitive-success" />

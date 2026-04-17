@@ -9,6 +9,7 @@ import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { useLanguage } from "@/hooks/useLanguage";
 import LanguageSwitch from "@/components/LanguageSwitch";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // 404 kļūdas lapa - parādās, kad lietotājs mēģina piekļūt neesošam maršrutam
 const NotFound = () => {
@@ -28,8 +29,9 @@ const NotFound = () => {
 
   // Atgriež 404 kļūdas lapu ar ziņojumu un saiti uz sākumu
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="fixed right-4 top-4 z-20">
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="fixed right-4 top-4 z-20 flex gap-2">
+        <ThemeToggle />
         <LanguageSwitch />
       </div>
       <div className="text-center">

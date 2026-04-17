@@ -16,6 +16,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Importē autentifikācijas kontekstu
 import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
+import { ThemeProvider } from "@/hooks/useTheme";
 // Importē visas lapas
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -38,18 +39,20 @@ const App = () => (
       {/* Uzstāda maršrutēšanu */}
       <BrowserRouter>
         {/* Nodrošina autentifikācijas kontekstu visā aplikācijā */}
-        <LanguageProvider>
-          <AuthProvider>
-            {/* Definē visus maršrutus */}
-            <Routes>
-              <Route path="/" element={<Index />} /> {/* Sākumlapa */}
-              <Route path="/auth" element={<Auth />} /> {/* Autentifikācijas lapa */}
-              <Route path="/profile" element={<Profile />} /> {/* Profila lapa */}
-              <Route path="/dashboard" element={<Dashboard />} /> {/* Pārskatu panelis */}
-              <Route path="*" element={<NotFound />} /> {/* 404 lapa */}
-            </Routes>
-          </AuthProvider>
-        </LanguageProvider>
+        <ThemeProvider>
+          <LanguageProvider>
+            <AuthProvider>
+              {/* Definē visus maršrutus */}
+              <Routes>
+                <Route path="/" element={<Index />} /> {/* Sākumlapa */}
+                <Route path="/auth" element={<Auth />} /> {/* Autentifikācijas lapa */}
+                <Route path="/profile" element={<Profile />} /> {/* Profila lapa */}
+                <Route path="/dashboard" element={<Dashboard />} /> {/* Pārskatu panelis */}
+                <Route path="*" element={<NotFound />} /> {/* 404 lapa */}
+              </Routes>
+            </AuthProvider>
+          </LanguageProvider>
+        </ThemeProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

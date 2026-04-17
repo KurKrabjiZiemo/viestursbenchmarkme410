@@ -348,7 +348,7 @@ const AimTrainer = ({ onBack, language }: AimTrainerProps) => {
                     >
                       {/* Target center */}
                       <div 
-                        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full bg-white"
+                        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full bg-background"
                         style={{ width: '20%', height: '20%' }}
                       />
                     </div>
