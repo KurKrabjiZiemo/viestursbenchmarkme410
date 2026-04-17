@@ -293,7 +293,7 @@ const MemoryTest = ({ onBack, language }: MemoryTestProps) => {
                       !isUserSelected(index) && 
                       testState !== "memorizing" && 
                       (testState !== "complete" || !sequence.includes(index))
-                      ? "border-muted bg-muted/10"
+                      ? "border-muted-foreground/50 bg-muted/10"
                       : ""
                     }
                   `}
