@@ -259,6 +259,34 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
     return `${Math.round(score)}`;
   };
 
+  const formatLeaderboardScoreParts = (testType: LeaderboardTestType, score: number): { value: string; unit: string } => {
+    if (testType === 'reaction') {
+      return { value: `${Math.round(score)}`, unit: 'ms' };
+    }
+
+    if (testType === 'aim') {
+      return { value: `${Number(score).toFixed(1)}`, unit: '%' };
+    }
+
+    return { value: `${Math.round(score)}`, unit: '' };
+  };
+
+  const formatLeaderboardDate = (dateValue: string): string => {
+    return new Date(dateValue).toLocaleDateString(language === 'lv' ? 'lv-LV' : 'en-GB');
+  };
+
+  const getUserInitials = (username: string): string => {
+    const initials = username
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('');
+
+    return initials || 'U';
+  };
+
   const getLeaderboardDetails = (testType: LeaderboardTestType, row: LeaderboardRow): string[] => {
     const details: string[] = [];
 
@@ -351,76 +379,7 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 xl:pr-[420px] xl:ml-[740px]">
-      <aside className="hidden xl:block fixed right-5 top-24 w-[380px] z-20">
-        <Card className="bg-gradient-card border-border/50 animate-fade-in-up">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-cognitive-accent" />
-              {t.leaderboard}
-            </CardTitle>
-            <CardDescription>{t.bestByType}</CardDescription>
-            <Select value={selectedLeaderboardTest} onValueChange={(value) => setSelectedLeaderboardTest(value as LeaderboardTestType)}>
-              <SelectTrigger>
-                <SelectValue placeholder={t.selectTest} />
-              </SelectTrigger>
-              <SelectContent>
-                {leaderboardTestOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </CardHeader>
-          <CardContent>
-            {leaderboardLoading ? (
-              <p className="text-sm text-muted-foreground">{t.loadingLeaderboard}</p>
-            ) : leaderboardRows.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t.noLeaderboardResults}</p>
-            ) : (
-              <div className="space-y-2.5 max-h-[68vh] overflow-y-auto pr-1">
-                {leaderboardRows.map((row, index) => {
-                  const isCurrentUser = user?.id === row.user_id;
-                  const details = getLeaderboardDetails(selectedLeaderboardTest, row);
-                  return (
-                    <div
-                      key={`${row.user_id}-${index}`}
-                      className={`p-2.5 rounded-lg border ${isCurrentUser ? 'bg-cognitive-primary/10 border-cognitive-primary/40' : 'bg-muted/20 border-border/30'}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="min-w-0 pr-2">
-                          <p className="font-semibold text-sm leading-tight truncate">
-                            #{index + 1} {row.username}
-                            {isCurrentUser ? ` ${t.you}` : ''}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {new Date(row.last_played_at).toLocaleDateString()}
-                          </p>
-                          {details.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1.5">
-                              {details.slice(0, 2).map((detail) => (
-                                <span
-                                  key={`${row.user_id}-${detail}`}
-                                  className="px-1.5 py-0.5 rounded-md bg-muted/40 text-[11px] text-foreground/90"
-                                >
-                                  {detail}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-xl font-bold text-cognitive-primary ml-2 shrink-0">
-                          {formatLeaderboardScore(selectedLeaderboardTest, row.best_score)}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </aside>
-
+    <div className="container mx-auto px-4 py-8 xl:relative">
       {/* Header with Auth Buttons */}
       <header className="text-center mb-12 animate-fade-in-up">
         <div className="flex justify-end items-center gap-3 mb-6">
@@ -590,6 +549,97 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
             )}
           </CardContent>
         </Card>
+      </aside>
+
+      <aside className="hidden xl:block fixed right-4 top-24 w-[clamp(400px,37vw,550px)] z-30">
+        <div className="bg-gradient-card border border-border/60 rounded-2xl overflow-hidden animate-fade-in-up shadow-cognitive">
+          <div className="grid grid-cols-[minmax(140px,34%)_1fr] min-h-[420px]">
+            <div className="border-r border-border/40 bg-background/35 p-4">
+              <p className="text-xs text-muted-foreground mb-3">{t.selectTest}</p>
+              <div className="space-y-1">
+                {leaderboardTestOptions.map((option) => {
+                  const isActive = option.value === selectedLeaderboardTest;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setSelectedLeaderboardTest(option.value)}
+                      className={`w-full text-left rounded-md px-3 py-2 text-base transition-colors border-l-2 ${
+                        isActive
+                          ? 'bg-cognitive-primary/15 border-cognitive-primary text-foreground font-semibold'
+                          : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/35'
+                      }`}
+                    >
+                      <span className={`mr-2 ${isActive ? 'text-cognitive-primary' : 'text-muted-foreground'}`}>•</span>
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="p-5">
+              <div className="mb-4">
+                <h3 className="text-[clamp(1.9rem,2vw,2.2rem)] font-bold leading-tight flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-cognitive-accent" />
+                  {t.leaderboard}
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">{t.bestByType}</p>
+              </div>
+
+              {leaderboardLoading ? (
+                <p className="text-sm text-muted-foreground">{t.loadingLeaderboard}</p>
+              ) : leaderboardRows.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{t.noLeaderboardResults}</p>
+              ) : (
+                <div className="space-y-2.5 max-h-[64vh] overflow-y-auto pr-1">
+                  {leaderboardRows.map((row, index) => {
+                    const isCurrentUser = user?.id === row.user_id;
+                    const details = getLeaderboardDetails(selectedLeaderboardTest, row);
+                    const scoreParts = formatLeaderboardScoreParts(selectedLeaderboardTest, row.best_score);
+
+                    return (
+                      <div
+                        key={`${row.user_id}-${index}`}
+                        className={`rounded-xl border px-4 py-3 ${
+                          isCurrentUser
+                            ? 'bg-cognitive-primary/10 border-cognitive-primary/50'
+                            : 'bg-muted/20 border-border/40'
+                        }`}
+                      >
+                        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+                          <div className="min-w-0 flex items-center gap-3 col-span-2">
+                            <p className={`text-lg font-semibold w-9 shrink-0 ${isCurrentUser ? 'text-cognitive-primary' : 'text-muted-foreground'}`}>
+                              #{index + 1}
+                            </p>
+                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${isCurrentUser ? 'bg-cognitive-primary/35 text-cognitive-primary-foreground' : 'bg-cognitive-secondary/35 text-cognitive-secondary-foreground'}`}>
+                              {getUserInitials(row.username)}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-semibold text-base truncate">
+                                {row.username}
+                                {isCurrentUser ? ` ${t.you}` : ''}
+                              </p>
+                              <p className="text-xs text-muted-foreground whitespace-normal leading-snug pr-2">
+                                {formatLeaderboardDate(row.last_played_at)}
+                                {details.length > 0 ? `  ${details.join('  ')}` : ''}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <p className="text-2xl leading-none font-bold text-cognitive-primary">{scoreParts.value}</p>
+                            {scoreParts.unit && <p className="text-xs text-muted-foreground mt-1">{scoreParts.unit}</p>}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </aside>
     </div>
   );

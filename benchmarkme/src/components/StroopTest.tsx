@@ -104,11 +104,11 @@ const StroopTest = ({ onBack, language }: StroopTestProps) => {
     complete: language === "lv" ? "Tests pabeigts" : "Test complete",
     readyDesc:
       language === "lv"
-        ? "Nosauc krāsu, ar kuru uzrakstīts vārds, nevis pašu vārdu"
-        : "Name the color of the text, not the word itself",
+        ? "Nospied krāsu, ar kuru uzrakstīts vārds, nevis pašu vārdu"
+        : "Press the color of the text, not the word itself",
     activeDesc: language === "lv" ? "Koncentrējies uz krāsu, nevis uz vārdu" : "Focus on the color, not the word",
     start: language === "lv" ? "Sākt Stroop Testu" : "Start Stroop Test",
-    matching: language === "lv" ? "saskanīgi" : "matching",
+    matching: language === "lv" ? "pieskaņoti" : "matching",
     tryAgain: language === "lv" ? "Mēģināt Vēlreiz" : "Try Again",
     reset: language === "lv" ? "Atiestatīt" : "Reset",
   };
@@ -177,7 +177,7 @@ const StroopTest = ({ onBack, language }: StroopTestProps) => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-3xl mx-auto">
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-8 animate-fade-in-up" style={{ animationDelay: "0ms" }}>
           <Button
             variant="secondary"
             size="sm"
@@ -197,7 +197,7 @@ const StroopTest = ({ onBack, language }: StroopTestProps) => {
           </div>
         </div>
 
-        <Card className="mb-6 bg-gradient-card border-border/50">
+        <Card className="mb-6 bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
           <CardContent className="pt-6">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
               <div className="space-y-1">
@@ -218,7 +218,7 @@ const StroopTest = ({ onBack, language }: StroopTestProps) => {
           </CardContent>
         </Card>
 
-        <Card className="mb-8 bg-gradient-card border-border/50">
+        <Card className="mb-8 bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
           <CardHeader className="text-center">
             <CardTitle>
               {testState === "ready" && t.ready}

@@ -197,7 +197,7 @@ const MemoryTest = ({ onBack, language }: MemoryTestProps) => {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-8 animate-fade-in-up" style={{ animationDelay: "0ms" }}>
           <Button 
             variant="secondary" 
             size="sm" 
@@ -218,7 +218,7 @@ const MemoryTest = ({ onBack, language }: MemoryTestProps) => {
         </div>
 
         {/* Status Bar */}
-        <Card className="mb-6 bg-gradient-card border-border/50">
+        <Card className="mb-6 bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
           <CardContent className="pt-6">
             <div className="grid grid-cols-3 gap-4 text-center">
               <div className="space-y-1">
@@ -240,7 +240,7 @@ const MemoryTest = ({ onBack, language }: MemoryTestProps) => {
         </Card>
 
         {/* Instructions */}
-        <Card className="mb-6 bg-gradient-card border-border/50">
+        <Card className="mb-6 bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "150ms" }}>
           <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center gap-2">
               {testState === "ready" && <Play className="w-5 h-5" />}
@@ -266,7 +266,7 @@ const MemoryTest = ({ onBack, language }: MemoryTestProps) => {
         </Card>
 
         {/* Game Grid */}
-        <Card className="mb-6 bg-gradient-card border-border/50">
+        <Card className="mb-6 bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
           <CardContent className="pt-6">
             <div className="grid grid-cols-4 gap-3 max-w-sm mx-auto">
               {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => (
@@ -345,7 +345,7 @@ const MemoryTest = ({ onBack, language }: MemoryTestProps) => {
 
         {/* Progress Indicator */}
         {testState === "recalling" && (
-          <Card className="bg-gradient-card border-border/50">
+          <Card className="bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "250ms" }}>
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="text-sm text-muted-foreground mb-2">

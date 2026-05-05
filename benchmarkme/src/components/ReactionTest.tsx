@@ -178,7 +178,7 @@ const ReactionTest = ({ onBack, language }: ReactionTestProps) => {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-8 animate-fade-in-up" style={{ animationDelay: "0ms" }}>
           <Button 
             variant="secondary" 
             size="sm" 
@@ -199,7 +199,7 @@ const ReactionTest = ({ onBack, language }: ReactionTestProps) => {
         </div>
 
         {/* Main Test Area */}
-        <Card className="mb-8 bg-gradient-card border-border/50">
+        <Card className="mb-8 bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
           <CardHeader className="text-center">
             <CardTitle>
               {testState === "ready" && t.readyTitle}
@@ -252,7 +252,7 @@ const ReactionTest = ({ onBack, language }: ReactionTestProps) => {
 
         {/* Results */}
         {attempts.length > 0 && (
-          <Card className="bg-gradient-card border-border/50">
+          <Card className="bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
             <CardHeader>
               <CardTitle>{t.results}</CardTitle>
               <CardDescription>{t.resultsDescription}</CardDescription>

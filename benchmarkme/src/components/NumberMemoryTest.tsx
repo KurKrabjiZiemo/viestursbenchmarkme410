@@ -171,7 +171,7 @@ const NumberMemoryTest = ({ onBack, language }: NumberMemoryTestProps) => {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-8 animate-fade-in-up" style={{ animationDelay: "0ms" }}>
           <Button 
             variant="secondary" 
             size="sm" 
@@ -192,7 +192,7 @@ const NumberMemoryTest = ({ onBack, language }: NumberMemoryTestProps) => {
         </div>
 
         {/* Status Bar */}
-        <Card className="mb-6 bg-gradient-card border-border/50">
+        <Card className="mb-6 bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
           <CardContent className="pt-6">
             <div className="grid grid-cols-3 gap-4 text-center">
               <div className="space-y-1">
@@ -214,7 +214,7 @@ const NumberMemoryTest = ({ onBack, language }: NumberMemoryTestProps) => {
         </Card>
 
         {/* Main Test Area */}
-        <Card className="mb-8 bg-gradient-card border-border/50">
+        <Card className="mb-8 bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
           <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center gap-2 text-2xl">
               {testState === "ready" && <Play className="w-6 h-6" />}
@@ -336,7 +336,7 @@ const NumberMemoryTest = ({ onBack, language }: NumberMemoryTestProps) => {
 
         {/* Results */}
         {attempts.length > 0 && (
-          <Card className="bg-gradient-card border-border/50">
+          <Card className="bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
             <CardHeader>
               <CardTitle>{t.results}</CardTitle>
               <CardDescription>{t.resultsDescription}</CardDescription>

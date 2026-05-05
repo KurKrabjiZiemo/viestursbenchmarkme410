@@ -245,7 +245,7 @@ const AimTrainer = ({ onBack, language }: AimTrainerProps) => {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-8 animate-fade-in-up" style={{ animationDelay: "0ms" }}>
           <Button 
             variant="secondary" 
             size="sm" 
@@ -266,7 +266,7 @@ const AimTrainer = ({ onBack, language }: AimTrainerProps) => {
         </div>
 
         {/* Stats Bar */}
-        <Card className="mb-6 bg-gradient-card border-border/50">
+        <Card className="mb-6 bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
           <CardContent className="pt-6">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
               <div className="space-y-1">
@@ -294,7 +294,7 @@ const AimTrainer = ({ onBack, language }: AimTrainerProps) => {
         </Card>
 
         {/* Main Game Area */}
-        <Card className="mb-8 bg-gradient-card border-border/50">
+        <Card className="mb-8 bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
           <CardHeader className="text-center">
             <CardTitle>
               {testState === "ready" && t.ready}
@@ -390,7 +390,7 @@ const AimTrainer = ({ onBack, language }: AimTrainerProps) => {
 
         {/* Results */}
         {attempts.length > 0 && (
-          <Card className="bg-gradient-card border-border/50">
+          <Card className="bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
             <CardHeader>
               <CardTitle>Tavi Rezultāti</CardTitle>
               <CardDescription>Precizitātes treniņa snieguma vēsture</CardDescription>

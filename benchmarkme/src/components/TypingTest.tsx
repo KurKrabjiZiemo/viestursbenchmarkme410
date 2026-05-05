@@ -18,15 +18,15 @@ const TEST_DURATION = 60;
 const COUNTDOWN_DURATION = 5;
 
 const SAMPLE_TEXTS_LV = [
-  "Atrais brunais lapsa leca pari slinkajam sunim. Sis teikums satur visus alfabetta burtus vismaz vienu reizi un ir lielisks rakstisanas trenninam.",
-  "Tehnologija ir labaka, kad ta apvieno cilvekus kopa. Nkotne pieder tiem, kas apgust vairak prasmju un apvieno tas radosos veidos.",
-  "Prakse rada progresu, nevis perfektumu. Katrs taustina sitiens veido muskulu atminu, un katra kluda ir macisanas iespeja.",
+  "Mūsdienās cilvēki daudz laika pavada pie datora vai telefona. Tas nozīmē, ka rakstīšanas prasmes kļūst arvien svarīgākas. Ja cilvēks spēj rakstīt ātri un bez kļūdām, viņš var efektīvāk paveikt savus darbus. Tāpēc ir vērts regulāri trenēties.",
+  "Mūsdienās cilvēki daudz laika pavada pie datora vai telefona. Tas nozīmē, ka rakstīšanas prasmes kļūst arvien svarīgākas. Ja cilvēks spēj rakstīt ātri un bez kļūdām, viņš var efektīvāk paveikt savus darbus. Tāpēc ir vērts regulāri trenēties.",
+  "Latvijā daba ir ļoti daudzveidīga un skaista. Ir gan biezi meži, gan plaši lauki un dzidri ezeri. Cilvēki bieži dodas pastaigās vai izbraucienos pie dabas, lai atpūstos. Katrs gadalaiks piedāvā ko īpašu un interesantu.",
 ];
 
 const SAMPLE_TEXTS_EN = [
-  "The quick brown fox jumps over the lazy dog. This sentence includes every letter of the alphabet and is great for typing practice.",
-  "Technology is best when it brings people together. The future belongs to those who keep learning and combine skills creatively.",
-  "Practice builds progress, not perfection. Every keystroke builds muscle memory, and every mistake is a chance to improve.",
+  "This morning I woke up early and looked outside the window. The sky was cloudy, but it was not raining. I quickly ate my breakfast and went to school. On the way, I listened to music and thought about my plans for the day.",
+  "Nowadays, people spend a lot of time using computers and smartphones. This means that typing skills are becoming more important than ever. If a person can type quickly and accurately, they can complete tasks more efficiently and save time.",
+  "Nature in many countries is beautiful and diverse. There are forests, rivers, and lakes that people can visit to relax. Spending time outdoors can help reduce stress and improve overall well-being. Every season offers something unique and enjoyable.",
 ];
 
 const TypingTest = ({ onBack, language }: TypingTestProps) => {
@@ -232,7 +232,7 @@ const TypingTest = ({ onBack, language }: TypingTestProps) => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-8 animate-fade-in-up" style={{ animationDelay: "0ms" }}>
           <Button variant="secondary" size="sm" onClick={onBack} className="flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" />
             {t.back}
@@ -247,7 +247,7 @@ const TypingTest = ({ onBack, language }: TypingTestProps) => {
           </div>
         </div>
 
-        <Card className="mb-6 bg-gradient-card border-border/50">
+        <Card className="mb-6 bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
           <CardContent className="pt-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div className="space-y-1">
@@ -275,7 +275,7 @@ const TypingTest = ({ onBack, language }: TypingTestProps) => {
           </CardContent>
         </Card>
 
-        <Card className="mb-8 bg-gradient-card border-border/50">
+        <Card className="mb-8 bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
           <CardHeader className="text-center">
             <CardTitle>
               {testState === "ready" && t.ready}
@@ -351,7 +351,7 @@ const TypingTest = ({ onBack, language }: TypingTestProps) => {
         </Card>
 
         {attempts.length > 0 && (
-          <Card className="bg-gradient-card border-border/50">
+          <Card className="bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
             <CardHeader>
               <CardTitle>{t.results}</CardTitle>
               <CardDescription>{t.history}</CardDescription>
