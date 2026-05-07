@@ -13,7 +13,6 @@ const {
   saveMemoryResult,
   saveNumberMemoryResult,
   saveTypingResult,
-  saveAimResult,
   saveStroopResult,
   getTestResults,
   getAllResults,
@@ -33,7 +32,6 @@ router.post('/reaction', saveReactionResult);
 router.post('/memory', saveMemoryResult);
 router.post('/number-memory', saveNumberMemoryResult);
 router.post('/typing', saveTypingResult);
-router.post('/aim', saveAimResult);
 router.post('/stroop', saveStroopResult);
 
 // Iegūt rezultātus

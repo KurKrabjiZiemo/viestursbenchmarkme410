@@ -26,7 +26,6 @@ const translateTestType = (testType: string, language: "lv" | "en"): string => {
     number_memory: { lv: "Skaitļu Atmiņa", en: "Number Memory" },
     "number-memory": { lv: "Skaitļu Atmiņa", en: "Number Memory" },
     typing: { lv: "Rakstīšanas Ātrums", en: "Typing Speed" },
-    aim: { lv: "Precizitātes Treniņš", en: "Aim Trainer" },
     stroop: { lv: "Stroop Krāsu-Vārdu Tests", en: "Stroop Color-Word Test" },
   };
   const translation = translations[testType];

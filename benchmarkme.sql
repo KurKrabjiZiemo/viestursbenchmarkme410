@@ -19,27 +19,6 @@
 CREATE DATABASE IF NOT EXISTS `benchmarkme` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */;
 USE `benchmarkme`;
 
--- Dumping structure for table benchmarkme.aim_results
-CREATE TABLE IF NOT EXISTS `aim_results` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `total_targets` int(11) NOT NULL,
-  `targets_hit` int(11) NOT NULL,
-  `targets_missed` int(11) DEFAULT 0,
-  `average_time_ms` int(11) NOT NULL,
-  `best_time_ms` int(11) DEFAULT NULL,
-  `worst_time_ms` int(11) DEFAULT NULL,
-  `accuracy_percent` decimal(5,2) DEFAULT NULL,
-  `total_time_ms` int(11) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  KEY `idx_user_aim` (`user_id`),
-  KEY `idx_aim_avg_time` (`average_time_ms`),
-  CONSTRAINT `aim_results_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Dumping data for table benchmarkme.aim_results: ~0 rows (approximately)
-
 -- Dumping structure for table benchmarkme.stroop_results
 CREATE TABLE IF NOT EXISTS `stroop_results` (
   `id` int NOT NULL AUTO_INCREMENT,

@@ -7,7 +7,7 @@
  */
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Brain, Zap, Target, Timer, TrendingUp, Hash, Keyboard, Crosshair, User, BarChart3, Palette, Trophy } from "lucide-react";
+import { Brain, Zap, Target, Timer, TrendingUp, Hash, Keyboard, User, BarChart3, Palette, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -20,7 +20,6 @@ import ReactionTest from "@/components/ReactionTest";
 import MemoryTest from "@/components/MemoryTest";
 import NumberMemoryTest from "@/components/NumberMemoryTest";
 import TypingTest from "@/components/TypingTest";
-import AimTrainer from "@/components/AimTrainer";
 import StroopTest from "@/components/StroopTest";
 
 // Tulkojums jo stulbais db
@@ -31,7 +30,6 @@ const translateTestType = (testType: string, language: "lv" | "en"): string => {
     number_memory: { lv: "Skaitļu atmiņa", en: "Number memory" },
     "number-memory": { lv: "Skaitļu atmiņa", en: "Number memory" },
     typing: { lv: "Rakstīšanas ātrums", en: "Typing speed" },
-    aim: { lv: "Precizitātes treniņš", en: "Aim trainer" },
     stroop: { lv: "Krāsu-vārdu tests", en: "Color-word test" },
   };
   const translation = translations[testType];
@@ -39,7 +37,7 @@ const translateTestType = (testType: string, language: "lv" | "en"): string => {
 };
 
 // Definē visus iespējamos testu veidus
-type TestType = "dashboard" | "reaction" | "memory" | "number" | "typing" | "aim" | "stroop";
+type TestType = "dashboard" | "reaction" | "memory" | "number" | "typing" | "stroop";
 
 // Testa rezultāta datu struktūra
 interface TestResult {
@@ -50,7 +48,7 @@ interface TestResult {
   created_at: string;
 }
 
-type LeaderboardTestType = "reaction" | "memory" | "number_memory" | "typing" | "aim" | "stroop";
+type LeaderboardTestType = "reaction" | "memory" | "number_memory" | "typing" | "stroop";
 
 interface LeaderboardRow {
   user_id: number;
@@ -99,8 +97,6 @@ const Index = () => {
         return <NumberMemoryTest onBack={() => setCurrentTest("dashboard")} language={language} />;
       case "typing":
         return <TypingTest onBack={() => setCurrentTest("dashboard")} language={language} />;
-      case "aim":
-        return <AimTrainer onBack={() => setCurrentTest("dashboard")} language={language} />;
       case "stroop":
         return <StroopTest onBack={() => setCurrentTest("dashboard")} language={language} />;
       default:
@@ -255,17 +251,12 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
 
   const formatLeaderboardScore = (testType: LeaderboardTestType, score: number): string => {
     if (testType === 'reaction') return `${Math.round(score)} ms`;
-    if (testType === 'aim') return `${Number(score).toFixed(1)}%`;
     return `${Math.round(score)}`;
   };
 
   const formatLeaderboardScoreParts = (testType: LeaderboardTestType, score: number): { value: string; unit: string } => {
     if (testType === 'reaction') {
       return { value: `${Math.round(score)}`, unit: 'ms' };
-    }
-
-    if (testType === 'aim') {
-      return { value: `${Number(score).toFixed(1)}`, unit: '%' };
     }
 
     return { value: `${Math.round(score)}`, unit: '' };
@@ -306,7 +297,7 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
       details.push(`${t.digits}: ${Math.round(Number(row.digits_remembered))}`);
     }
 
-    if (row.average_time_ms != null && (testType === 'reaction' || testType === 'aim' || testType === 'stroop')) {
+    if (row.average_time_ms != null && (testType === 'reaction' || testType === 'stroop')) {
       details.push(`${t.avgTime}: ${Math.round(Number(row.average_time_ms))} ms`);
     }
 
@@ -322,7 +313,6 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
     { value: 'reaction', label: language === "lv" ? 'Reakcijas laiks' : 'Reaction time' },
     { value: 'memory', label: language === "lv" ? 'Vizuālā atmiņa' : 'Visual memory' },
     { value: 'number_memory', label: language === "lv" ? 'Skaitļu atmiņa' : 'Number memory' },
-    { value: 'aim', label: language === "lv" ? 'Precizitātes treniņš' : 'Aim trainer' },
     { value: 'stroop', label: language === "lv" ? 'Stroop tests' : 'Stroop test' }
   ];
 
@@ -360,21 +350,12 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
       delay: "450ms"
     },
     {
-      id: "aim" as TestType,
-      title: language === "lv" ? "Precizitātes treniņš" : "Aim trainer",
-      description: "W.I.P",
-      icon: Crosshair,
-      gradient: "bg-gradient-primary",
-      delay: "600ms",
-      disabled: true
-    },
-    {
       id: "stroop" as TestType,
       title: language === "lv" ? "Stroop krāsu-vārdu tests" : "Stroop color-word test",
       description: language === "lv" ? "Nosaki krāsu, nevis vārdu!" : "Identify the color, not the word!",
       icon: Palette,
       gradient: "bg-gradient-accent",
-      delay: "750ms"
+      delay: "600ms"
     }
   ];
 
@@ -422,9 +403,9 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
           return (
             <Card 
               key={test.id}
-              className={`group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-cognitive animate-fade-in-up border-border/50 bg-gradient-card ${test.disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
+              className="group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-cognitive animate-fade-in-up border-border/50 bg-gradient-card"
               style={{ animationDelay: test.delay }}
-              onClick={() => !test.disabled && onStartTest(test.id)}
+              onClick={() => onStartTest(test.id)}
             >
               <CardHeader className="text-center pb-4">
                 <div className={`w-16 h-16 mx-auto mb-4 rounded-full ${test.gradient} flex items-center justify-center group-hover:animate-pulse-glow transition-all duration-300`}>
@@ -439,11 +420,10 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
               </CardHeader>
               <CardContent className="text-center">
                 <Button 
-                  disabled={test.disabled}
                   variant="secondary" 
                   className="w-full group-hover:bg-cognitive-accent group-hover:text-cognitive-accent-foreground transition-all duration-300"
                 >
-                  {test.disabled ? "W.I.P" : t.start}
+                  {t.start}
                 </Button>
               </CardContent>
             </Card>

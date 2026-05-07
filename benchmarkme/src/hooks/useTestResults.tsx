@@ -40,7 +40,6 @@ const TEST_ENDPOINTS: Record<string, string> = {
   'memory': '/test-results/memory',
   'number_memory': '/test-results/number-memory',
   'typing': '/test-results/typing',
-  'aim': '/test-results/aim',
   'stroop': '/test-results/stroop'
 };
 
