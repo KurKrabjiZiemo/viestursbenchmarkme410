@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: AUTH.JS - AUTENTIFIKĀCIJAS MARŠRUTI
+ * APRAKSTS: AUTENTIFIKĀCIJAS API MARŠRUTU DEFINĪCIJAS -
+ *           REĢISTRĀCIJA, PIETEIKŠANĀS, SESIJA UN IZRAKSTĪŠANĀS
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 const express = require('express');
 const router = express.Router();
 const { signUp, signIn, getSession, signOut } = require('../controllers/authController');

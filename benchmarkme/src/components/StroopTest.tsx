@@ -1,11 +1,21 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: STROOPTEST.TSX - STRŪPA EFEKTA TESTA KOMPONENTE
+ * APRAKSTS: STRŪPA EFEKTA TESTS, KUR LIETOTĀJAM JĀNOSAKA KRĀSA,
+ *           KURĀ VĀRDS IR UZRAKSTĪTS, NEVIS VĀRDA NOZĪME
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 import { useMemo, useState } from "react";
 import { ArrowLeft, Play, RotateCcw, Palette, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTestResults } from "@/hooks/useTestResults";
+import LanguageSwitch from "@/components/LanguageSwitch";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface StroopTestProps {
   onBack: () => void;
+  language: "lv" | "en";
 }
 
 type TestState = "ready" | "active" | "complete";
@@ -16,31 +26,26 @@ const TRIALS_COUNT = 20;
 
 const COLORS: Array<{
   key: ColorKey;
-  label: string;
   textClass: string;
   buttonClass: string;
 }> = [
   {
     key: "red",
-    label: "Sarkans",
     textClass: "text-red-500",
     buttonClass: "bg-red-500 hover:bg-red-600"
   },
   {
     key: "blue",
-    label: "Zils",
     textClass: "text-blue-500",
     buttonClass: "bg-blue-500 hover:bg-blue-600"
   },
   {
     key: "green",
-    label: "Zaļš",
     textClass: "text-green-500",
     buttonClass: "bg-green-500 hover:bg-green-600"
   },
   {
     key: "yellow",
-    label: "Dzeltens",
     textClass: "text-yellow-500",
     buttonClass: "bg-yellow-500 hover:bg-yellow-600"
   }
@@ -67,7 +72,7 @@ const buildTrials = () => {
   return trials;
 };
 
-const StroopTest = ({ onBack }: StroopTestProps) => {
+const StroopTest = ({ onBack, language }: StroopTestProps) => {
   const { saveTestResult } = useTestResults();
 
   const [testState, setTestState] = useState<TestState>("ready");
@@ -76,6 +81,37 @@ const StroopTest = ({ onBack }: StroopTestProps) => {
   const [correctCount, setCorrectCount] = useState(0);
   const [incorrectCount, setIncorrectCount] = useState(0);
   const [lastResult, setLastResult] = useState<"correct" | "incorrect" | null>(null);
+
+  const getColorLabel = (color: ColorKey) => {
+    const map = {
+      red: language === "lv" ? "Sarkans" : "Red",
+      blue: language === "lv" ? "Zils" : "Blue",
+      green: language === "lv" ? "Zaļš" : "Green",
+      yellow: language === "lv" ? "Dzeltens" : "Yellow",
+    };
+    return map[color];
+  };
+
+  const t = {
+    back: language === "lv" ? "Atpakaļ" : "Back",
+    title: language === "lv" ? "Stroop Krāsu-Vārdu Tests" : "Stroop Color-Word Test",
+    attempt: language === "lv" ? "Mēģinājums" : "Attempt",
+    correct: language === "lv" ? "Pareizi" : "Correct",
+    incorrect: language === "lv" ? "Nepareizi" : "Incorrect",
+    accuracy: language === "lv" ? "Precizitāte" : "Accuracy",
+    ready: language === "lv" ? "Gatavs pārbaudīt uzmanību?" : "Ready to test your focus?",
+    active: language === "lv" ? "Izvēlies teksta krāsu" : "Choose the text color",
+    complete: language === "lv" ? "Tests pabeigts" : "Test complete",
+    readyDesc:
+      language === "lv"
+        ? "Nospied krāsu, ar kuru uzrakstīts vārds, nevis pašu vārdu"
+        : "Press the color of the text, not the word itself",
+    activeDesc: language === "lv" ? "Koncentrējies uz krāsu, nevis uz vārdu" : "Focus on the color, not the word",
+    start: language === "lv" ? "Sākt Stroop Testu" : "Start Stroop Test",
+    matching: language === "lv" ? "pieskaņoti" : "matching",
+    tryAgain: language === "lv" ? "Mēģināt Vēlreiz" : "Try Again",
+    reset: language === "lv" ? "Atiestatīt" : "Reset",
+  };
 
   const currentTrial = trials[currentIndex];
 
@@ -136,12 +172,12 @@ const StroopTest = ({ onBack }: StroopTestProps) => {
   const congruentCount = useMemo(() => trials.filter(trial => trial.isCongruent).length, [trials]);
 
   const inkColor = currentTrial ? COLORS.find(color => color.key === currentTrial.ink) : null;
-  const wordLabel = currentTrial ? COLORS.find(color => color.key === currentTrial.word)?.label : "";
+  const wordLabel = currentTrial ? getColorLabel(currentTrial.word) : "";
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-3xl mx-auto">
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-8 animate-fade-in-up" style={{ animationDelay: "0ms" }}>
           <Button
             variant="secondary"
             size="sm"
@@ -149,46 +185,50 @@ const StroopTest = ({ onBack }: StroopTestProps) => {
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Atpakaļ
+            {t.back}
           </Button>
           <div className="flex items-center gap-2">
             <Palette className="w-6 h-6 text-cognitive-primary" />
-            <h1 className="text-3xl font-bold">Stroop Krāsu-Vārdu Tests</h1>
+            <h1 className="text-3xl font-bold">{t.title}</h1>
+          </div>
+          <div className="flex items-center gap-2 ml-auto">
+            <ThemeToggle />
+            <LanguageSwitch />
           </div>
         </div>
 
-        <Card className="mb-6 bg-gradient-card border-border/50">
+        <Card className="mb-6 bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
           <CardContent className="pt-6">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
               <div className="space-y-1">
                 <div className="text-2xl font-bold text-cognitive-primary">
                   {testState === "active" ? currentIndex + 1 : trials.length}
                 </div>
-                <div className="text-sm text-muted-foreground">Mēģinājums</div>
+                <div className="text-sm text-muted-foreground">{t.attempt}</div>
               </div>
               <div className="space-y-1">
                 <div className="text-2xl font-bold text-cognitive-success">{correctCount}</div>
-                <div className="text-sm text-muted-foreground">Pareizi</div>
+                <div className="text-sm text-muted-foreground">{t.correct}</div>
               </div>
               <div className="space-y-1">
                 <div className="text-2xl font-bold text-cognitive-warning">{accuracy}%</div>
-                <div className="text-sm text-muted-foreground">Precizitāte</div>
+                <div className="text-sm text-muted-foreground">{t.accuracy}</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="mb-8 bg-gradient-card border-border/50">
+        <Card className="mb-8 bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
           <CardHeader className="text-center">
             <CardTitle>
-              {testState === "ready" && "Gatavs pārbaudīt uzmanību?"}
-              {testState === "active" && "Izvēlies teksta krāsu"}
-              {testState === "complete" && "Tests pabeigts"}
+              {testState === "ready" && t.ready}
+              {testState === "active" && t.active}
+              {testState === "complete" && t.complete}
             </CardTitle>
             <CardDescription>
-              {testState === "ready" && "Nosauc krāsu, ar kuru uzrakstīts vārds, nevis pašu vārdu"}
-              {testState === "active" && "Koncentrējies uz krāsu, nevis uz vārdu"}
-              {testState === "complete" && `Precizitāte: ${accuracy}%`}
+              {testState === "ready" && t.readyDesc}
+              {testState === "active" && t.activeDesc}
+              {testState === "complete" && `${t.accuracy}: ${accuracy}%`}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -200,10 +240,10 @@ const StroopTest = ({ onBack }: StroopTestProps) => {
                   size="lg"
                 >
                   <Play className="w-4 h-4 mr-2" />
-                  Sākt Stroop Testu
+                  {t.start}
                 </Button>
                 <p className="text-sm text-muted-foreground mt-4">
-                  {TRIALS_COUNT} mēģinājumi, {congruentCount || 0} saskanīgi
+                  {TRIALS_COUNT} {language === "lv" ? "mēģinājumi" : "attempts"}, {congruentCount || 0} {t.matching}
                 </p>
               </div>
             )}
@@ -224,9 +264,9 @@ const StroopTest = ({ onBack }: StroopTestProps) => {
                     <Button
                       key={color.key}
                       onClick={() => handleAnswer(color.key)}
-                      className={`${color.buttonClass} text-white font-semibold`}
+                      className={`${color.buttonClass} text-foreground font-semibold`}
                     >
-                      {color.label}
+                      {getColorLabel(color.key)}
                     </Button>
                   ))}
                 </div>
@@ -236,12 +276,12 @@ const StroopTest = ({ onBack }: StroopTestProps) => {
                     {lastResult === "correct" ? (
                       <>
                         <CheckCircle2 className="w-4 h-4 text-cognitive-success" />
-                        <span className="text-cognitive-success">Pareizi</span>
+                        <span className="text-cognitive-success">{t.correct}</span>
                       </>
                     ) : (
                       <>
                         <XCircle className="w-4 h-4 text-destructive" />
-                        <span className="text-destructive">Nepareizi</span>
+                        <span className="text-destructive">{t.incorrect}</span>
                       </>
                     )}
                   </div>
@@ -254,15 +294,15 @@ const StroopTest = ({ onBack }: StroopTestProps) => {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
                   <div className="space-y-1">
                     <div className="text-2xl font-bold text-cognitive-success">{correctCount}</div>
-                    <div className="text-sm text-muted-foreground">Pareizi</div>
+                    <div className="text-sm text-muted-foreground">{t.correct}</div>
                   </div>
                   <div className="space-y-1">
                     <div className="text-2xl font-bold text-destructive">{incorrectCount}</div>
-                    <div className="text-sm text-muted-foreground">Nepareizi</div>
+                    <div className="text-sm text-muted-foreground">{t.incorrect}</div>
                   </div>
                   <div className="space-y-1">
                     <div className="text-2xl font-bold text-cognitive-warning">{accuracy}%</div>
-                    <div className="text-sm text-muted-foreground">Precizitāte</div>
+                    <div className="text-sm text-muted-foreground">{t.accuracy}</div>
                   </div>
                 </div>
 
@@ -272,11 +312,11 @@ const StroopTest = ({ onBack }: StroopTestProps) => {
                     className="bg-cognitive-primary hover:bg-cognitive-primary/80"
                   >
                     <Play className="w-4 h-4 mr-2" />
-                    Mēģināt Vēlreiz
+                    {t.tryAgain}
                   </Button>
                   <Button onClick={resetTest} variant="secondary">
                     <RotateCcw className="w-4 h-4 mr-2" />
-                    Atiestatīt
+                    {t.reset}
                   </Button>
                 </div>
               </div>
