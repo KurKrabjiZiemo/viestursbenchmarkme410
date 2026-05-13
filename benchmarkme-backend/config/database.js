@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: DATABASE.JS - DATUBĀZES KONFIGURĀCIJAS FAILS
+ * APRAKSTS: MYSQL DATUBĀZES SAVIENOJUMA IZVEIDE UN PĀRVALDĪBA,
+ *           IZMANTO SAVIENOJUMU PŪLU EFEKTĪVAI DARBĪBAI
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
@@ -18,6 +25,11 @@ const ensureSchema = async () => {
     await pool.query(
       `ALTER TABLE users
        ADD COLUMN IF NOT EXISTS username VARCHAR(50) NULL UNIQUE AFTER email`
+    );
+
+    await pool.query(
+      `ALTER TABLE users
+       ADD COLUMN IF NOT EXISTS profile_picture LONGTEXT NULL AFTER username`
     );
   } catch (error) {
     console.error('Kļūda atjaunojot users shēmu:', error.message);

@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: MEMORYTEST.TSX - VIZUĀLĀS ATMĒŅAS TESTA KOMPONENTE
+ * APRAKSTS: VIZUĀLĀS ATMĒŅAS TESTS, KUR LIETOTĀJAM JĀIEGAUMĒ
+ *           UN JĀATVEIDO REDZĒTO ELEMENTU IZVIETOŠANA
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 // Importē nepieciešamos React hook-us
 import { useState, useEffect } from "react";
 // Importē ikonas
@@ -7,10 +14,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 // Importē hook rezultātu saglabāšanai
 import { useTestResults } from "@/hooks/useTestResults";
+import LanguageSwitch from "@/components/LanguageSwitch";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // Komponentes rekvizīti
 interface MemoryTestProps {
   onBack: () => void; // Funkcija atgriešanās uz sākumlapu
+  language: "lv" | "en";
 }
 
 // Testa stāvokļa tipi
@@ -23,7 +33,7 @@ const SHOW_TIME = 2000; // Cik ilgi parāda secību (milisekundēs)
 const MEMORIZE_TIME = 3000; // Cik ilgi lietotājs var atcerēties (milisekundēs)
 
 // Vizuālās atmiņas testa komponente
-const MemoryTest = ({ onBack }: MemoryTestProps) => {
+const MemoryTest = ({ onBack, language }: MemoryTestProps) => {
   // Iegūst funkciju rezultātu saglabāšanai
   const { saveTestResult } = useTestResults();
   
@@ -36,6 +46,29 @@ const MemoryTest = ({ onBack }: MemoryTestProps) => {
   const [showingIndex, setShowingIndex] = useState(0); // Kurš elements pašlaik tiek rādīts
   const [timeLeft, setTimeLeft] = useState(0); // Atlikušais laiks
   const [lastAttemptCorrect, setLastAttemptCorrect] = useState(false); // Lietotājam spiests mēģināt no jauna, ja zaudē
+
+  const t = {
+    back: language === "lv" ? "Atpakaļ" : "Back",
+    title: language === "lv" ? "Vizuālās Atmiņas Tests" : "Visual Memory Test",
+    level: language === "lv" ? "Līmenis" : "Level",
+    score: language === "lv" ? "Rezultāts" : "Score",
+    sequence: language === "lv" ? "Secība" : "Sequence",
+    ready: language === "lv" ? "Gatavs sākt" : "Ready to start",
+    watch: language === "lv" ? "Skaties secību" : "Watch the sequence",
+    memorize: language === "lv" ? "Atceries kvadrātus" : "Memorize the squares",
+    repeat: language === "lv" ? "Atkārto secību" : "Repeat the sequence",
+    completed: language === "lv" ? "līmenis pabeigts!" : "level completed!",
+    tryAgain: language === "lv" ? "Mēģini vēlreiz!" : "Try again!",
+    readyDesc: language === "lv" ? "Iegaumē iezīmētos kvadrātus!" : "Memorize the highlighted squares!",
+    watchDesc: language === "lv" ? "Pievērs uzmanību secībai" : "Focus on the sequence",
+    memorizeDesc: language === "lv" ? "Sagatavojies atkārtot secību" : "Get ready to repeat the sequence",
+    repeatDesc: language === "lv" ? "Nospied kvadrātus tajā pašā secībā" : "Click the squares in the same order",
+    accuracy: language === "lv" ? "Precizitāte" : "Accuracy",
+    startLevel: language === "lv" ? "Sākt" : "Start",
+    nextLevel: language === "lv" ? "Nākamais Līmenis" : "Next Level",
+    restart: language === "lv" ? "Sākt No Jauna" : "Start Over",
+    progress: language === "lv" ? "Progress" : "Progress",
+  };
 
   // Ģenerē gadījuma secību ar noteiktu garumu (bez atkārtošanās)
   const generateSequence = (length: number) => {
@@ -164,7 +197,7 @@ const MemoryTest = ({ onBack }: MemoryTestProps) => {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-8 animate-fade-in-up" style={{ animationDelay: "0ms" }}>
           <Button 
             variant="secondary" 
             size="sm" 
@@ -172,38 +205,42 @@ const MemoryTest = ({ onBack }: MemoryTestProps) => {
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Atpakaļ
+            {t.back}
           </Button>
           <div className="flex items-center gap-2">
             <Brain className="w-6 h-6 text-cognitive-primary" />
-            <h1 className="text-3xl font-bold">Vizuālās Atmiņas Tests</h1>
+            <h1 className="text-3xl font-bold">{t.title}</h1>
+          </div>
+          <div className="flex items-center gap-2 ml-auto">
+            <ThemeToggle />
+            <LanguageSwitch />
           </div>
         </div>
 
         {/* Status Bar */}
-        <Card className="mb-6 bg-gradient-card border-border/50">
+        <Card className="mb-6 bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
           <CardContent className="pt-6">
             <div className="grid grid-cols-3 gap-4 text-center">
               <div className="space-y-1">
                 <div className="text-2xl font-bold text-cognitive-primary">{currentLevel}</div>
-                <div className="text-sm text-muted-foreground">Līmenis</div>
+                <div className="text-sm text-muted-foreground">{t.level}</div>
               </div>
               <div className="space-y-1">
                 <div className="text-2xl font-bold text-cognitive-success">{score}</div>
-                <div className="text-sm text-muted-foreground">Rezultāts</div>
+                <div className="text-sm text-muted-foreground">{t.score}</div>
               </div>
               <div className="space-y-1">
                 <div className="text-2xl font-bold text-cognitive-accent">
                   {sequence.length || SEQUENCE_LENGTH}
                 </div>
-                <div className="text-sm text-muted-foreground">Secība</div>
+                <div className="text-sm text-muted-foreground">{t.sequence}</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Instructions */}
-        <Card className="mb-6 bg-gradient-card border-border/50">
+        <Card className="mb-6 bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "150ms" }}>
           <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center gap-2">
               {testState === "ready" && <Play className="w-5 h-5" />}
@@ -212,24 +249,24 @@ const MemoryTest = ({ onBack }: MemoryTestProps) => {
               {testState === "recalling" && <Brain className="w-5 h-5 text-cognitive-primary" />}
               {testState === "complete" && <Brain className="w-5 h-5 text-cognitive-success" />}
               
-              {testState === "ready" && "Gatavs sākt"}
-              {testState === "showing" && "Skaties secību"}
-              {testState === "memorizing" && `Atceries kvadrātus (${timeLeft}s)`}
-              {testState === "recalling" && "Atkārto secību"}
-              {testState === "complete" && (lastAttemptCorrect ? `${currentLevel - 1}. līmenis pabeigts!` : "Mēģini vēlreiz!")}
+              {testState === "ready" && t.ready}
+              {testState === "showing" && t.watch}
+              {testState === "memorizing" && `${t.memorize} (${timeLeft}s)`}
+              {testState === "recalling" && t.repeat}
+              {testState === "complete" && (lastAttemptCorrect ? `${currentLevel - 1}. ${t.completed}` : t.tryAgain)}
             </CardTitle>
             <CardDescription>
-              {testState === "ready" && "Iegaumē iezīmētos kvadrātus!"}
-              {testState === "showing" && "Pievērs uzmanību secībai"}
-              {testState === "memorizing" && "Sagatavojies atkārtot secību"}
-              {testState === "recalling" && "Nospied kvadrātus tajā pašā secībā"}
-              {testState === "complete" && `Precizitāte: ${getAccuracy()}%`}
+              {testState === "ready" && t.readyDesc}
+              {testState === "showing" && t.watchDesc}
+              {testState === "memorizing" && t.memorizeDesc}
+              {testState === "recalling" && t.repeatDesc}
+              {testState === "complete" && `${t.accuracy}: ${getAccuracy()}%`}
             </CardDescription>
           </CardHeader>
         </Card>
 
         {/* Game Grid */}
-        <Card className="mb-6 bg-gradient-card border-border/50">
+        <Card className="mb-6 bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
           <CardContent className="pt-6">
             <div className="grid grid-cols-4 gap-3 max-w-sm mx-auto">
               {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => (
@@ -262,7 +299,7 @@ const MemoryTest = ({ onBack }: MemoryTestProps) => {
                       !isUserSelected(index) && 
                       testState !== "memorizing" && 
                       (testState !== "complete" || !sequence.includes(index))
-                      ? "border-muted bg-muted/10"
+                      ? "border-muted-foreground/50 bg-muted/10"
                       : ""
                     }
                   `}
@@ -284,7 +321,7 @@ const MemoryTest = ({ onBack }: MemoryTestProps) => {
                   className="bg-cognitive-primary hover:bg-cognitive-primary/80"
                 >
                   <Play className="w-4 h-4 mr-2" />
-                  Sākt {currentLevel}. līmeni
+                  {t.startLevel} {currentLevel}. {language === "lv" ? "līmeni" : "level"}
                 </Button>
               )}
               {testState === "complete" && (
@@ -294,11 +331,11 @@ const MemoryTest = ({ onBack }: MemoryTestProps) => {
                     disabled={!lastAttemptCorrect}
                     className="bg-cognitive-primary hover:bg-cognitive-primary/80"
                   >
-                    Nākamais Līmenis
+                    {t.nextLevel}
                   </Button>
                   <Button onClick={resetTest} variant="secondary">
                     <RotateCcw className="w-4 h-4 mr-2" />
-                    Sākt No Jauna
+                    {t.restart}
                   </Button>
                 </div>
               )}
@@ -308,11 +345,11 @@ const MemoryTest = ({ onBack }: MemoryTestProps) => {
 
         {/* Progress Indicator */}
         {testState === "recalling" && (
-          <Card className="bg-gradient-card border-border/50">
+          <Card className="bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "250ms" }}>
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="text-sm text-muted-foreground mb-2">
-                  Progress: {userSequence.length}/{sequence.length}
+                  {t.progress}: {userSequence.length}/{sequence.length}
                 </div>
                 <div className="w-full bg-muted rounded-full h-2">
                   <div 

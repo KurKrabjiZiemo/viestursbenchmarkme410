@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: TESTRESULTSCONTROLLER.JS - TESTU REZULTĀTU KONTROLIERIS
+ * APRAKSTS: VISU KOGNITĪVO TESTU REZULTĀTU SAGLABĀŠANA, IEGŪŠANA,
+ *           LĪDERU TABULAS UN STATISTIKAS APSTRĀDE
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 const pool = require('../config/database');
 
 const getValidatedUserId = (req) => {
@@ -159,37 +166,6 @@ const saveTypingResult = async (req, res) => {
   }
 };
 
-// ============ PRECIZITĀTES TESTS ============
-const saveAimResult = async (req, res) => {
-  try {
-    const userId = await getAuthorizedExistingUserId(req, res);
-    if (!userId) return;
-    const { score, metadata } = req.body;
-
-    // Map to current aim_results schema
-    const accuracy = metadata?.accuracy ?? 0;
-    const avgReactionTime = metadata?.avgReactionTime ?? 0;
-    const hits = metadata?.hits ?? 0;
-    const misses = metadata?.misses ?? 0;
-    const totalTargets = hits + misses;
-    const best = metadata?.bestTime ?? avgReactionTime;
-    const worst = metadata?.worstTime ?? null;
-    const totalTime = metadata?.totalTimeMs ?? null;
-
-    await pool.query(
-      `INSERT INTO aim_results 
-       (user_id, total_targets, targets_hit, targets_missed, average_time_ms, best_time_ms, worst_time_ms, accuracy_percent, total_time_ms) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [userId, totalTargets, hits, misses, avgReactionTime, best, worst, accuracy, totalTime]
-    );
-
-    res.status(201).json({ message: 'Precizitātes rezultāts saglabāts!' });
-  } catch (error) {
-    console.error('Kļūda saglabājot precizitātes rezultātu:', error);
-    res.status(500).json({ error: 'Servera kļūda' });
-  }
-};
-
 // ============ STROOP TESTS ============
 const saveStroopResult = async (req, res) => {
   try {
@@ -238,7 +214,6 @@ const getTestResults = async (req, res) => {
       'memory': 'memory_results',
       'number-memory': 'number_memory_results',
       'typing': 'typing_results',
-      'aim': 'aim_results',
       'stroop': 'stroop_results'
     };
 
@@ -269,7 +244,7 @@ const getAllResults = async (req, res) => {
       return res.status(401).json({ error: 'Nederīga autorizācija. Pieslēdzies vēlreiz.' });
     }
 
-    const [reaction, memory, numberMemory, typing, aim, stroop] = await Promise.all([
+    const [reaction, memory, numberMemory, typing, stroop] = await Promise.all([
       runResultsQuerySafely(
         `SELECT id, user_id, reaction_time_ms as score, 'reaction' as test_type, created_at FROM reaction_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
         [userId],
@@ -291,11 +266,6 @@ const getAllResults = async (req, res) => {
         'getAllResults:typing'
       ),
       runResultsQuerySafely(
-        `SELECT id, user_id, accuracy_percent as score, 'aim' as test_type, created_at FROM aim_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
-        [userId],
-        'getAllResults:aim'
-      ),
-      runResultsQuerySafely(
         `SELECT id, user_id, correct_count as score, 'stroop' as test_type, created_at FROM stroop_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 100`,
         [userId],
         'getAllResults:stroop'
@@ -303,7 +273,7 @@ const getAllResults = async (req, res) => {
     ]);
 
     // Combine all results into a single flat array
-    const allResults = [...reaction, ...memory, ...numberMemory, ...typing, ...aim, ...stroop]
+    const allResults = [...reaction, ...memory, ...numberMemory, ...typing, ...stroop]
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     res.json(allResults);
@@ -337,8 +307,6 @@ const getRecentResults = async (req, res) => {
         SELECT id, user_id, 'number_memory' AS test_type, correct_answers AS score, created_at FROM number_memory_results
         UNION ALL
         SELECT id, user_id, 'typing' AS test_type, wpm AS score, created_at FROM typing_results
-        UNION ALL
-        SELECT id, user_id, 'aim' AS test_type, accuracy_percent AS score, created_at FROM aim_results
         UNION ALL
         SELECT id, user_id, 'stroop' AS test_type, correct_count AS score, created_at FROM stroop_results
       ) AS recent
@@ -438,24 +406,6 @@ const getLeaderboard = async (req, res) => {
         ORDER BY best_score DESC, accuracy_percent DESC, last_played_at DESC
         LIMIT ?`
       },
-      aim: {
-        query: `SELECT
-          u.id AS user_id,
-          COALESCE(NULLIF(u.username, ''), CONCAT('user', u.id)) AS username,
-          MAX(r.accuracy_percent) AS best_score,
-          MAX(r.created_at) AS last_played_at,
-          COUNT(*) AS attempts_count,
-          NULL AS level_reached,
-          MAX(r.accuracy_percent) AS accuracy_percent,
-          MAX(r.targets_hit) AS points,
-          MIN(r.average_time_ms) AS average_time_ms,
-          NULL AS digits_remembered
-        FROM aim_results r
-        INNER JOIN users u ON u.id = r.user_id
-        GROUP BY u.id, u.username
-        ORDER BY best_score DESC, points DESC, last_played_at DESC
-        LIMIT ?`
-      },
       stroop: {
         query: `SELECT
           u.id AS user_id,
@@ -495,7 +445,6 @@ module.exports = {
   saveMemoryResult,
   saveNumberMemoryResult,
   saveTypingResult,
-  saveAimResult,
   saveStroopResult,
   getTestResults,
   getAllResults,

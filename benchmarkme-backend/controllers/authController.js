@@ -1,7 +1,22 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: AUTHCONTROLLER.JS - AUTENTIFIKĀCIJAS KONTROLIERIS
+ * APRAKSTS: LIETOTĀJU REĢISTRĀCIJAS, PIETEIKŠANĀS, SESIJAS PĀRBAUDES
+ *           UN IZRAKSTĪŠANĀS LOĢIKAS APSTRĀDE
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 const pool = require('../config/database');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+
+const buildUserPayload = (user) => ({
+  id: user.id,
+  email: user.email,
+  username: user.username,
+  profile_picture: user.profile_picture,
+  created_at: user.created_at,
+});
 
 // Reģistrācija - izveido jaunu lietotāju
 const signUp = async (req, res) => {
@@ -48,7 +63,7 @@ const signUp = async (req, res) => {
 
     // Iegūst jaunizveidoto lietotāju
     const [users] = await pool.query(
-      'SELECT id, email, username, created_at FROM users WHERE email = ?',
+      'SELECT id, email, username, profile_picture, created_at FROM users WHERE email = ?',
       [email]
     );
 
@@ -63,7 +78,7 @@ const signUp = async (req, res) => {
 
     res.status(201).json({
       message: 'Konts izveidots veiksmīgi!',
-      user: { id: user.id, email: user.email, username: user.username, created_at: user.created_at },
+      user: buildUserPayload(user),
       token
     });
 
@@ -85,7 +100,7 @@ const signIn = async (req, res) => {
 
     // Meklē lietotāju pēc e-pasta vai lietotājvārda
     const [users] = await pool.query(
-      'SELECT id, email, username, password_hash, created_at FROM users WHERE email = ? OR username = ? LIMIT 1',
+      'SELECT id, email, username, profile_picture, password_hash, created_at FROM users WHERE email = ? OR username = ? LIMIT 1',
       [normalizedIdentifier, normalizedIdentifier]
     );
 
@@ -111,7 +126,7 @@ const signIn = async (req, res) => {
 
     res.json({
       message: 'Pieteikšanās veiksmīga!',
-      user: { id: user.id, email: user.email, username: user.username, created_at: user.created_at },
+      user: buildUserPayload(user),
       token
     });
 
@@ -126,7 +141,7 @@ const getSession = async (req, res) => {
   try {
     // req.user tiek uzstādīts middleware
     const [users] = await pool.query(
-      'SELECT id, email, username, created_at FROM users WHERE id = ?',
+      'SELECT id, email, username, profile_picture, created_at FROM users WHERE id = ?',
       [req.user.id]
     );
 
@@ -134,7 +149,7 @@ const getSession = async (req, res) => {
       return res.status(404).json({ error: 'Lietotājs nav atrasts' });
     }
 
-    res.json({ user: users[0] });
+    res.json({ user: buildUserPayload(users[0]) });
 
   } catch (error) {
     console.error('Sesijas kļūda:', error);

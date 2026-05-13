@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: AUTH.TSX - AUTENTIFIKĀCIJAS LAPAS KOMPONENTE
+ * APRAKSTS: LIETOTĀJA PIETEIKŠANĀS UN REĢISTRĀCIJAS SASKARNE,
+ *           IETVER FORMU VALIDĀCIJU UN AUTENTIFIKĀCIJAS LOĢIKU
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 // Importē nepieciešamos React hook-us un komponentus
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +18,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // Importē autentifikācijas hook
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/hooks/useLanguage";
+import LanguageSwitch from "@/components/LanguageSwitch";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // Autentifikācijas lapa - pieteikšanās un reģistrācija
 const Auth = () => {
@@ -24,6 +34,46 @@ const Auth = () => {
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { language } = useLanguage();
+
+  const t = {
+    missingDataTitle: language === "lv" ? "Trūkst dati" : "Missing data",
+    missingDataDescription:
+      language === "lv" ? "Ievadi e-pastu vai lietotājvārdu" : "Enter your email or username",
+    invalidEmailTitle: language === "lv" ? "Nederīgs E-pasts" : "Invalid email",
+    invalidEmailDescription:
+      language === "lv"
+        ? "Lūdzu ievadiet derīgu e-pasta adresi (piemēram, tavs@epasts.lv)"
+        : "Please enter a valid email address (for example, you@example.com)",
+    invalidUsernameTitle: language === "lv" ? "Nederīgs Lietotājvārds" : "Invalid username",
+    invalidUsernameDescription:
+      language === "lv"
+        ? "Lietotājvārdam jābūt no 3 līdz 50 rakstzīmēm"
+        : "Username must be between 3 and 50 characters",
+    invalidPasswordTitle: language === "lv" ? "Nederīga Parole" : "Invalid password",
+    invalidPasswordDescription:
+      language === "lv"
+        ? "Parolei jābūt vismaz 8 rakstzīmēm, vienam ciparam un vienam simbolam"
+        : "Password must be at least 8 characters and contain at least one number and one symbol",
+    title: language === "lv" ? "Kognitīvie Testi" : "Cognitive Tests",
+    subtitle:
+      language === "lv"
+        ? "Piesakies, lai izsekotu savu kognitīvo sniegumu"
+        : "Sign in to track your cognitive performance",
+    signIn: language === "lv" ? "Ielogoties" : "Sign In",
+    signUp: language === "lv" ? "Reģistrēties" : "Sign Up",
+    emailOrUsername: language === "lv" ? "E-pasts vai lietotājvārds" : "Email or username",
+    emailOrUsernamePlaceholder:
+      language === "lv" ? "tavs@epasts.lv vai mans_lietotajs" : "you@example.com or my_username",
+    password: language === "lv" ? "Parole" : "Password",
+    username: language === "lv" ? "Lietotājvārds" : "Username",
+    usernamePlaceholder: language === "lv" ? "mans_lietotajs" : "my_username",
+    email: language === "lv" ? "E-pasts" : "Email",
+    emailPlaceholder: language === "lv" ? "tavs@epasts.lv" : "you@example.com",
+    signingIn: language === "lv" ? "Ielogošanās..." : "Signing in...",
+    creatingAccount: language === "lv" ? "Izveido kontu..." : "Creating account...",
+    createAccount: language === "lv" ? "Izveidot Kontu" : "Create Account",
+  };
 
   // Funkcija, kas pārbauda vai e-pasts ir derīgs
   const isValidEmail = (email: string): boolean => {
@@ -44,8 +94,8 @@ const Auth = () => {
     const trimmedIdentifier = signInIdentifier.trim();
     if (!trimmedIdentifier) {
       toast({
-        title: "Trūkst dati",
-        description: "Ievadi e-pastu vai lietotājvārdu",
+        title: t.missingDataTitle,
+        description: t.missingDataDescription,
         variant: "destructive"
       });
       return;
@@ -63,8 +113,18 @@ const Auth = () => {
     // Pārbauda vai e-pasts ir derīgs pirms reģistrācijas
     if (!isValidEmail(email)) {
       toast({
-        title: "Nederīgs E-pasts",
-        description: "Lūdzu ievadiet derīgu e-pasta adresi (piemēram, tavs@epasts.lv)",
+        title: t.invalidEmailTitle,
+        description: t.invalidEmailDescription,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const passwordRegex = /^(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      toast({
+        title: t.invalidPasswordTitle,
+        description: t.invalidPasswordDescription,
         variant: "destructive"
       });
       return;
@@ -73,8 +133,8 @@ const Auth = () => {
     const trimmedUsername = username.trim();
     if (trimmedUsername.length < 3 || trimmedUsername.length > 50) {
       toast({
-        title: "Nederīgs Lietotājvārds",
-        description: "Lietotājvārdam jābūt no 3 līdz 50 rakstzīmēm",
+        title: t.invalidUsernameTitle,
+        description: t.invalidUsernameDescription,
         variant: "destructive"
       });
       return;
@@ -87,6 +147,10 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-cognitive-primary/5">
+      <div className="fixed right-4 top-4 z-20 flex gap-2">
+        <ThemeToggle />
+        <LanguageSwitch />
+      </div>
       <Card className="w-full max-w-md bg-gradient-card border-border/50">
         <CardHeader className="text-center space-y-2">
           <div className="flex justify-center mb-2">
@@ -94,33 +158,33 @@ const Auth = () => {
               <Brain className="w-12 h-12 text-cognitive-primary" />
             </div>
           </div>
-          <CardTitle className="text-3xl">Kognitīvie Testi</CardTitle>
+          <CardTitle className="text-3xl">{t.title}</CardTitle>
           <CardDescription>
-            Piesakies, lai izsekotu savu kognitīvo sniegumu
+            {t.subtitle}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="signin">Ielogoties</TabsTrigger>
-              <TabsTrigger value="signup">Reģistrēties</TabsTrigger>
+              <TabsTrigger value="signin">{t.signIn}</TabsTrigger>
+              <TabsTrigger value="signup">{t.signUp}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-identifier">E-pasts vai lietotājvārds</Label>
+                  <Label htmlFor="signin-identifier">{t.emailOrUsername}</Label>
                   <Input
                     id="signin-identifier"
                     type="text"
-                    placeholder="tavs@epasts.lv vai mans_lietotajs"
+                    placeholder={t.emailOrUsernamePlaceholder}
                     value={signInIdentifier}
                     onChange={(e) => setSignInIdentifier(e.target.value)}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password">Parole</Label>
+                  <Label htmlFor="signin-password">{t.password}</Label>
                   <Input
                     id="signin-password"
                     type="password"
@@ -135,7 +199,7 @@ const Auth = () => {
                   className="w-full bg-cognitive-primary hover:bg-cognitive-primary/80"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Ielogošanās..." : "Ielogoties"}
+                  {isLoading ? t.signingIn : t.signIn}
                 </Button>
               </form>
             </TabsContent>
@@ -143,11 +207,11 @@ const Auth = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-username">Lietotājvārds</Label>
+                  <Label htmlFor="signup-username">{t.username}</Label>
                   <Input
                     id="signup-username"
                     type="text"
-                    placeholder="mans_lietotajs"
+                    placeholder={t.usernamePlaceholder}
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
@@ -156,26 +220,24 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">E-pasts</Label>
+                  <Label htmlFor="signup-email">{t.email}</Label>
                   <Input
                     id="signup-email"
                     type="text"
-                    placeholder="tavs@epasts.lv"
+                    placeholder={t.emailPlaceholder}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Parole</Label>
+                  <Label htmlFor="signup-password">{t.password}</Label>
                   <Input
                     id="signup-password"
                     type="password"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
                   />
                 </div>
                 <Button 
@@ -183,7 +245,7 @@ const Auth = () => {
                   className="w-full bg-cognitive-primary hover:bg-cognitive-primary/80"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Izveido kontu..." : "Izveidot Kontu"}
+                  {isLoading ? t.creatingAccount : t.createAccount}
                 </Button>
               </form>
             </TabsContent>

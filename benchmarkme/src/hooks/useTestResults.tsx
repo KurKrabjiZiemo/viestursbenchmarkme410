@@ -1,6 +1,14 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: USETESTRESULTS.TSX - TESTU REZULTĀTU HOOK KOMPONENTE
+ * APRAKSTS: HOOK TESTU REZULTĀTU SAGLABĀŠANAI DATUBĀZĒ,
+ *           APSTRĀDĀ DAŽĀDU TESTU VEIDU REZULTĀTU NOSŪTĪŠANU
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 import { apiRequest } from '@/lib/api';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
+import { useLanguage } from './useLanguage';
 
 // Definē metadata tipu
 interface TestMetadata {
@@ -32,7 +40,6 @@ const TEST_ENDPOINTS: Record<string, string> = {
   'memory': '/test-results/memory',
   'number_memory': '/test-results/number-memory',
   'typing': '/test-results/typing',
-  'aim': '/test-results/aim',
   'stroop': '/test-results/stroop'
 };
 
@@ -42,6 +49,7 @@ export const useTestResults = () => {
   const { user } = useAuth();
   // Iegūst toast funkciju paziņojumiem
   const { toast } = useToast();
+  const { language } = useLanguage();
 
   // Funkcija testa rezultāta saglabāšanai
   const saveTestResult = async (
@@ -78,8 +86,11 @@ export const useTestResults = () => {
       const apiError = error as ApiError;
       console.error('Error saving test result:', apiError.message || error);
       toast({
-        title: "Kļūda saglabājot rezultātu",
-        description: "Tavs tests tika pabeigts, bet rezultātu neizdevās saglabāt.",
+        title: language === "lv" ? "Kļūda saglabājot rezultātu" : "Error saving result",
+        description:
+          language === "lv"
+            ? "Tavs tests tika pabeigts, bet rezultātu neizdevās saglabāt."
+            : "Your test was completed, but the result could not be saved.",
         variant: "destructive"
       });
     }
