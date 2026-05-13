@@ -360,7 +360,12 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 xl:relative">
+    <div className="container mx-auto px-4 py-8 min-[1400px]:pr-[clamp(100px,34vw,250px)]">
+      <div className="fixed right-4 top-4 z-20 flex gap-2">
+        <ThemeToggle />
+        <LanguageSwitch />
+      </div>
+
       {/* Header with Auth Buttons */}
       <header className="text-center mb-12 animate-fade-in-up">
         <div className="flex justify-end items-center gap-3 mb-6">
@@ -381,8 +386,6 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
               {t.signIn}
             </Button>
           )}
-          <ThemeToggle />
-          <LanguageSwitch />
         </div>
         
         <div className="flex items-center justify-center gap-3 mb-4">
@@ -462,7 +465,7 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
         </Card>
       )}
 
-      <aside className="xl:hidden mt-8 max-w-2xl mx-auto">
+      <aside className="min-[1400px]:hidden mt-8 max-w-2xl mx-auto">
         <Card className="bg-gradient-card border-border/50 animate-fade-in-up">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -531,7 +534,7 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
         </Card>
       </aside>
 
-      <aside className="hidden xl:block fixed right-4 top-24 w-[clamp(400px,37vw,550px)] z-30">
+      <aside className="hidden min-[1400px]:block fixed right-4 top-24 w-[clamp(380px,32vw,500px)] z-30">
         <div className="bg-gradient-card border border-border/60 rounded-2xl overflow-hidden animate-fade-in-up shadow-cognitive">
           <div className="grid grid-cols-[minmax(140px,34%)_1fr] min-h-[420px]">
             <div className="border-r border-border/40 bg-background/35 p-4">
