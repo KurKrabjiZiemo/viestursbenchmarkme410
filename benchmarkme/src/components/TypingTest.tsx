@@ -102,8 +102,12 @@ const TypingTest = ({ onBack }: TypingTestProps) => {
       setCurrentWordIndex(Math.min(wordsTyped - 1, testText.split(/\s+/).length - 1));
     }
 
-    // Beigas
-    if (value.length >= testText.length) {
+    // Beigas: pabeidz testu arī tad, ja ievadīti visi vārdi, pat ar kļūdām
+    const typedWordCount = value.trim().length > 0 ? value.trim().split(/\s+/).length : 0;
+    const targetWordCount = testText.trim().split(/\s+/).length;
+    const hasReachedTextEnd = value.length >= testText.length || typedWordCount >= targetWordCount;
+
+    if (hasReachedTextEnd) {
       endTest(value);
     }
   };

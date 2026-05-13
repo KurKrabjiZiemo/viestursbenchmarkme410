@@ -11,6 +11,27 @@ const getValidatedUserId = (req) => {
   return numericUserId;
 };
 
+const ensureUserExists = async (userId) => {
+  const [rows] = await pool.query('SELECT id FROM users WHERE id = ? LIMIT 1', [userId]);
+  return rows.length > 0;
+};
+
+const getAuthorizedExistingUserId = async (req, res) => {
+  const userId = getValidatedUserId(req);
+  if (!userId) {
+    res.status(401).json({ error: 'Nederīga autorizācija. Pieslēdzies vēlreiz.' });
+    return null;
+  }
+
+  const userExists = await ensureUserExists(userId);
+  if (!userExists) {
+    res.status(401).json({ error: 'Lietotājs netika atrasts datubāzē. Lūdzu izraksties un pieslēdzies vēlreiz.' });
+    return null;
+  }
+
+  return userId;
+};
+
 const runResultsQuerySafely = async (query, params, contextLabel) => {
   try {
     const [rows] = await pool.query(query, params);
@@ -28,10 +49,8 @@ const runResultsQuerySafely = async (query, params, contextLabel) => {
 // ============ REAKCIJAS TESTS ============
 const saveReactionResult = async (req, res) => {
   try {
-    const userId = getValidatedUserId(req);
-    if (!userId) {
-      return res.status(401).json({ error: 'Nederīga autorizācija. Pieslēdzies vēlreiz.' });
-    }
+    const userId = await getAuthorizedExistingUserId(req, res);
+    if (!userId) return;
     const { score, metadata } = req.body;
 
     // Adapt to current schema: store one row per attempt
@@ -57,10 +76,8 @@ const saveReactionResult = async (req, res) => {
 // ============ VIZUĀLĀS ATMIŅAS TESTS ============
 const saveMemoryResult = async (req, res) => {
   try {
-    const userId = getValidatedUserId(req);
-    if (!userId) {
-      return res.status(401).json({ error: 'Nederīga autorizācija. Pieslēdzies vēlreiz.' });
-    }
+    const userId = await getAuthorizedExistingUserId(req, res);
+    if (!userId) return;
     const { score, metadata } = req.body;
 
     // Adapt to current memory_results schema
@@ -87,10 +104,8 @@ const saveMemoryResult = async (req, res) => {
 // ============ SKAITĻU ATMIŅAS TESTS ============
 const saveNumberMemoryResult = async (req, res) => {
   try {
-    const userId = getValidatedUserId(req);
-    if (!userId) {
-      return res.status(401).json({ error: 'Nederīga autorizācija. Pieslēdzies vēlreiz.' });
-    }
+    const userId = await getAuthorizedExistingUserId(req, res);
+    if (!userId) return;
     const { score, metadata } = req.body;
 
     // Adapt to current number_memory_results schema
@@ -117,10 +132,8 @@ const saveNumberMemoryResult = async (req, res) => {
 // ============ RAKSTĪŠANAS TESTS ============
 const saveTypingResult = async (req, res) => {
   try {
-    const userId = getValidatedUserId(req);
-    if (!userId) {
-      return res.status(401).json({ error: 'Nederīga autorizācija. Pieslēdzies vēlreiz.' });
-    }
+    const userId = await getAuthorizedExistingUserId(req, res);
+    if (!userId) return;
     const { score, metadata } = req.body;
 
     // Adapt to typing_results schema
@@ -149,10 +162,8 @@ const saveTypingResult = async (req, res) => {
 // ============ PRECIZITĀTES TESTS ============
 const saveAimResult = async (req, res) => {
   try {
-    const userId = getValidatedUserId(req);
-    if (!userId) {
-      return res.status(401).json({ error: 'Nederīga autorizācija. Pieslēdzies vēlreiz.' });
-    }
+    const userId = await getAuthorizedExistingUserId(req, res);
+    if (!userId) return;
     const { score, metadata } = req.body;
 
     // Map to current aim_results schema
@@ -182,10 +193,9 @@ const saveAimResult = async (req, res) => {
 // ============ STROOP TESTS ============
 const saveStroopResult = async (req, res) => {
   try {
-    const userId = getValidatedUserId(req);
-    if (!userId) {
-      return res.status(401).json({ error: 'Nederīga autorizācija. Pieslēdzies vēlreiz.' });
-    }
+    const userId = await getAuthorizedExistingUserId(req, res);
+    if (!userId) return;
+
     const { score, metadata } = req.body;
 
     const totalTrials = metadata?.totalTrials ?? metadata?.total ?? score ?? 0;
@@ -203,6 +213,9 @@ const saveStroopResult = async (req, res) => {
 
     res.status(201).json({ message: 'Stroop rezultāts saglabāts!' });
   } catch (error) {
+    if (error?.code === 'ER_NO_REFERENCED_ROW_2') {
+      return res.status(401).json({ error: 'Lietotāja sesija nav sinhronā ar datubāzi. Lūdzu pieslēdzies vēlreiz.' });
+    }
     if (error?.code === 'ER_NO_SUCH_TABLE') {
       return res.status(503).json({ error: 'Stroop tabula nav atrasta datubāzē. Importē jaunāko benchmarkme.sql.' });
     }
