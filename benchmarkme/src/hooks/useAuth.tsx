@@ -90,11 +90,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { error: null };
     } catch (error) {
       const err = error as Error;
-      toast({
-        title: language === "lv" ? "Reģistrācijas Kļūda" : "Sign up error",
-        description: err.message,
-        variant: "destructive"
-      });
       return { error: err };
     }
   };
@@ -119,11 +114,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { error: null };
     } catch (error) {
       const err = error as Error;
-      toast({
-        title: language === "lv" ? "Ielogošanās Kļūda" : "Sign in error",
-        description: err.message,
-        variant: "destructive"
-      });
       return { error: err };
     }
   };

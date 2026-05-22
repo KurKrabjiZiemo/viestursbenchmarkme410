@@ -21,6 +21,7 @@ const getUserById = async (userId) => {
 };
 
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const isStrongPassword = (value) => /^(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$/.test(String(value || ''));
 
 const isValidProfilePicture = (value) => {
   if (!value) {
@@ -175,8 +176,8 @@ const updatePassword = async (req, res) => {
       return res.status(400).json({ error: 'Ievadi pašreizējo paroli' });
     }
 
-    if (!newPassword || String(newPassword).length < 6) {
-      return res.status(400).json({ error: 'Jaunajai parolei jābūt vismaz 6 rakstzīmes garai' });
+    if (!isStrongPassword(newPassword)) {
+      return res.status(400).json({ error: 'Jaunajai parolei jābūt vismaz 8 rakstzīmēm, vienam ciparam un vienam simbolam' });
     }
 
     const [users] = await pool.query(

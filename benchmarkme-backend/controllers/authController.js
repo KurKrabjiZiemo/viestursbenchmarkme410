@@ -18,6 +18,8 @@ const buildUserPayload = (user) => ({
   created_at: user.created_at,
 });
 
+const isStrongPassword = (value) => /^(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$/.test(String(value || ''));
+
 // Reģistrācija - izveido jaunu lietotāju
 const signUp = async (req, res) => {
   try {
@@ -30,6 +32,10 @@ const signUp = async (req, res) => {
 
     if (normalizedUsername.length < 3 || normalizedUsername.length > 50) {
       return res.status(400).json({ error: 'Lietotājvārdam jābūt no 3 līdz 50 rakstzīmēm' });
+    }
+
+    if (!isStrongPassword(password)) {
+      return res.status(400).json({ error: 'Parolei jābūt vismaz 8 rakstzīmēm, vienam ciparam un vienam simbolam' });
     }
 
     // Pārbauda vai e-pasts jau eksistē
