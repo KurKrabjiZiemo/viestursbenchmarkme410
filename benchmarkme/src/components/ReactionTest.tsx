@@ -67,8 +67,8 @@ const ReactionTest = ({ onBack, language }: ReactionTestProps) => {
   
   // Atsauces precīzai laika mērīšanai
   const startTimeRef = useRef<number>(0); // Testa sākuma laiks
-  const timeoutRef = useRef<NodeJS.Timeout>(); // Taimera atsauce
-  const countdownIntervalRef = useRef<NodeJS.Timeout>(); // Atpakaļskaitīšanas intervāla atsauce
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null); // Taimera atsauce
+  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null); // Atpakaļskaitīšanas intervāla atsauce
 
   // Sāk testu ar atpakaļskaitīšanu un gadījuma aizkavi
   const startTest = () => {

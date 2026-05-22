@@ -46,6 +46,7 @@ const MemoryTest = ({ onBack, language }: MemoryTestProps) => {
   const [showingIndex, setShowingIndex] = useState(0); // Kurš elements pašlaik tiek rādīts
   const [timeLeft, setTimeLeft] = useState(0); // Atlikušais laiks
   const [lastAttemptCorrect, setLastAttemptCorrect] = useState(false); // Lietotājam spiests mēģināt no jauna, ja zaudē
+  const [attempts, setAttempts] = useState<Array<{ level: number; score: number; accuracy: number; isCorrect: boolean; timestamp: Date }>>([]);
 
   const t = {
     back: language === "lv" ? "Atpakaļ" : "Back",
@@ -68,6 +69,12 @@ const MemoryTest = ({ onBack, language }: MemoryTestProps) => {
     nextLevel: language === "lv" ? "Nākamais Līmenis" : "Next Level",
     restart: language === "lv" ? "Sākt No Jauna" : "Start Over",
     progress: language === "lv" ? "Progress" : "Progress",
+    sessionResults: language === "lv" ? "Sesijas Rezultāti" : "Session Results",
+    sessionResultsDescription: language === "lv" ? "Pēdējie mēģinājumi šajā sesijā" : "Latest attempts in this session",
+    attempts: language === "lv" ? "Mēģinājumi" : "Attempts",
+    bestLevel: language === "lv" ? "Labākais Līmenis" : "Best Level",
+    bestScore: language === "lv" ? "Labākais Rezultāts" : "Best Score",
+    latestAttempts: language === "lv" ? "Jaunākie Mēģinājumi:" : "Latest Attempts:",
   };
 
   // Ģenerē gadījuma secību ar noteiktu garumu (bez atkārtošanās)
@@ -105,17 +112,25 @@ const MemoryTest = ({ onBack, language }: MemoryTestProps) => {
       if (newUserSequence.length === sequence.length) {
         const isCorrect = newUserSequence.every((item, idx) => item === sequence[idx]);
         const newScore = isCorrect ? score + currentLevel * 10 : score;
+        const accuracy = getAccuracy();
         if (isCorrect) {
           setScore(newScore); // Piešķir punktus
           setCurrentLevel(currentLevel + 1); // Palielina līmeni
         }
+        setAttempts(prev => [...prev, {
+          level: currentLevel,
+          score: newScore,
+          accuracy,
+          isCorrect,
+          timestamp: new Date()
+        }]);
         setLastAttemptCorrect(isCorrect);
         setTestState("complete");
         
         // Saglabā rezultātu datubāzē
         saveTestResult("memory", newScore, {
           level: currentLevel,
-          accuracy: getAccuracy(),
+          accuracy,
           isCorrect
         });
       }
@@ -132,6 +147,7 @@ const MemoryTest = ({ onBack, language }: MemoryTestProps) => {
     setShowingIndex(0);
     setTimeLeft(0);
     setLastAttemptCorrect(false);
+    setAttempts([]);
   };
 
   // Aprēķina precizitāti procentos
@@ -142,7 +158,7 @@ const MemoryTest = ({ onBack, language }: MemoryTestProps) => {
   };
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
 
     if (testState === "showing") {
       interval = setInterval(() => {
@@ -356,6 +372,60 @@ const MemoryTest = ({ onBack, language }: MemoryTestProps) => {
                     className="bg-cognitive-primary h-2 rounded-full transition-all duration-300"
                     style={{ width: `${(userSequence.length / sequence.length) * 100}%` }}
                   />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {attempts.length > 0 && (
+          <Card className="mt-6 bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
+            <CardHeader>
+              <CardTitle>{t.sessionResults}</CardTitle>
+              <CardDescription>{t.sessionResultsDescription}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center mb-6">
+                <div className="space-y-1">
+                  <div className="text-2xl font-bold text-cognitive-accent">{attempts.length}</div>
+                  <div className="text-sm text-muted-foreground">{t.attempts}</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-2xl font-bold text-cognitive-primary">
+                    {Math.round(attempts.reduce((sum, item) => sum + item.accuracy, 0) / attempts.length)}%
+                  </div>
+                  <div className="text-sm text-muted-foreground">{t.accuracy}</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-2xl font-bold text-cognitive-success">
+                    {Math.max(...attempts.filter(item => item.isCorrect).map(item => item.level), 0)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">{t.bestLevel}</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-2xl font-bold text-cognitive-warning">
+                    {Math.max(...attempts.map(item => item.score), 0)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">{t.bestScore}</div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-2">{t.latestAttempts}</h4>
+                <div className="space-y-2">
+                  {attempts.slice(-5).reverse().map((attempt, index) => (
+                    <div
+                      key={`${attempt.timestamp.toISOString()}-${index}`}
+                      className={`p-3 rounded-lg border ${attempt.isCorrect ? 'border-cognitive-success/50 bg-cognitive-success/10' : 'border-destructive/50 bg-destructive/10'}`}
+                    >
+                      <div className="flex justify-between items-center text-sm">
+                        <span>{t.level} {attempt.level} • {t.score}: {attempt.score} • {t.accuracy}: {attempt.accuracy}%</span>
+                        <span className={attempt.isCorrect ? 'text-cognitive-success' : 'text-destructive'}>
+                          {attempt.isCorrect ? '✓' : '✗'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </CardContent>

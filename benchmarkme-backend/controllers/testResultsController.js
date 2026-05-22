@@ -283,7 +283,8 @@ const getRecentResults = async (req, res) => {
         recent.test_type,
         recent.score,
         recent.created_at,
-        COALESCE(NULLIF(u.username, ''), CONCAT('user', u.id)) AS username
+        COALESCE(NULLIF(u.username, ''), CONCAT('user', u.id)) AS username,
+        u.profile_picture AS profile_picture
       FROM (
         SELECT id, user_id, 'reaction' AS test_type, reaction_time_ms AS score, created_at FROM reaction_results
         UNION ALL
@@ -323,6 +324,7 @@ const getLeaderboard = async (req, res) => {
         query: `SELECT
           u.id AS user_id,
           COALESCE(NULLIF(u.username, ''), CONCAT('user', u.id)) AS username,
+          u.profile_picture AS profile_picture,
           MIN(r.reaction_time_ms) AS best_score,
           MAX(r.created_at) AS last_played_at,
           COUNT(*) AS attempts_count,
@@ -333,7 +335,7 @@ const getLeaderboard = async (req, res) => {
           NULL AS digits_remembered
         FROM reaction_results r
         INNER JOIN users u ON u.id = r.user_id
-        GROUP BY u.id, u.username
+        GROUP BY u.id, u.username, u.profile_picture
         ORDER BY best_score ASC, last_played_at DESC
         LIMIT ?`
       },
@@ -341,6 +343,7 @@ const getLeaderboard = async (req, res) => {
         query: `SELECT
           u.id AS user_id,
           COALESCE(NULLIF(u.username, ''), CONCAT('user', u.id)) AS username,
+          u.profile_picture AS profile_picture,
           MAX(r.total_correct) AS best_score,
           MAX(r.created_at) AS last_played_at,
           COUNT(*) AS attempts_count,
@@ -351,7 +354,7 @@ const getLeaderboard = async (req, res) => {
           NULL AS digits_remembered
         FROM memory_results r
         INNER JOIN users u ON u.id = r.user_id
-        GROUP BY u.id, u.username
+        GROUP BY u.id, u.username, u.profile_picture
         ORDER BY best_score DESC, accuracy_percent DESC, last_played_at DESC
         LIMIT ?`
       },
@@ -359,6 +362,7 @@ const getLeaderboard = async (req, res) => {
         query: `SELECT
           u.id AS user_id,
           COALESCE(NULLIF(u.username, ''), CONCAT('user', u.id)) AS username,
+          u.profile_picture AS profile_picture,
           MAX(r.correct_answers) AS best_score,
           MAX(r.created_at) AS last_played_at,
           COUNT(*) AS attempts_count,
@@ -369,7 +373,7 @@ const getLeaderboard = async (req, res) => {
           MAX(r.digits_remembered) AS digits_remembered
         FROM number_memory_results r
         INNER JOIN users u ON u.id = r.user_id
-        GROUP BY u.id, u.username
+        GROUP BY u.id, u.username, u.profile_picture
         ORDER BY best_score DESC, digits_remembered DESC, last_played_at DESC
         LIMIT ?`
       },
@@ -377,6 +381,7 @@ const getLeaderboard = async (req, res) => {
         query: `SELECT
           u.id AS user_id,
           COALESCE(NULLIF(u.username, ''), CONCAT('user', u.id)) AS username,
+          u.profile_picture AS profile_picture,
           MAX(r.wpm) AS best_score,
           MAX(r.created_at) AS last_played_at,
           COUNT(*) AS attempts_count,
@@ -387,7 +392,7 @@ const getLeaderboard = async (req, res) => {
           NULL AS digits_remembered
         FROM typing_results r
         INNER JOIN users u ON u.id = r.user_id
-        GROUP BY u.id, u.username
+        GROUP BY u.id, u.username, u.profile_picture
         ORDER BY best_score DESC, accuracy_percent DESC, last_played_at DESC
         LIMIT ?`
       },
@@ -395,6 +400,7 @@ const getLeaderboard = async (req, res) => {
         query: `SELECT
           u.id AS user_id,
           COALESCE(NULLIF(u.username, ''), CONCAT('user', u.id)) AS username,
+          u.profile_picture AS profile_picture,
           MAX(r.correct_count) AS best_score,
           MAX(r.created_at) AS last_played_at,
           COUNT(*) AS attempts_count,
@@ -405,7 +411,7 @@ const getLeaderboard = async (req, res) => {
           NULL AS digits_remembered
         FROM stroop_results r
         INNER JOIN users u ON u.id = r.user_id
-        GROUP BY u.id, u.username
+        GROUP BY u.id, u.username, u.profile_picture
         ORDER BY best_score DESC, accuracy_percent DESC, last_played_at DESC
         LIMIT ?`
       }

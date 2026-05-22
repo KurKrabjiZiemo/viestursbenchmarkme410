@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /**
  * AUTORS: VIESTURS IVANCOVS
  * DATNE: APP.TSX - BENCHMARKME GALVENĀ APLIKĀCIJAS KOMPONENTE
@@ -7,8 +6,6 @@
  * VERSIJA: 2026. GADA MARTA VERSIJA
  */
 // Importē UI komponentus paziņojumiem un tooltipiem
-=======
->>>>>>> main
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,12 +15,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Importē autentifikācijas kontekstu
 import { AuthProvider } from "@/hooks/useAuth";
-<<<<<<< HEAD
 import { LanguageProvider } from "@/hooks/useLanguage";
 import { ThemeProvider } from "@/hooks/useTheme";
 // Importē visas lapas
-=======
->>>>>>> main
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";

@@ -81,6 +81,7 @@ const StroopTest = ({ onBack, language }: StroopTestProps) => {
   const [correctCount, setCorrectCount] = useState(0);
   const [incorrectCount, setIncorrectCount] = useState(0);
   const [lastResult, setLastResult] = useState<"correct" | "incorrect" | null>(null);
+  const [sessionRuns, setSessionRuns] = useState<Array<{ correct: number; incorrect: number; accuracy: number; timestamp: Date }>>([]);
 
   const getColorLabel = (color: ColorKey) => {
     const map = {
@@ -111,6 +112,11 @@ const StroopTest = ({ onBack, language }: StroopTestProps) => {
     matching: language === "lv" ? "pieskaņoti" : "matching",
     tryAgain: language === "lv" ? "Mēģināt Vēlreiz" : "Try Again",
     reset: language === "lv" ? "Atiestatīt" : "Reset",
+    sessionResults: language === "lv" ? "Sesijas Rezultāti" : "Session Results",
+    sessionResultsDescription: language === "lv" ? "Pēdējie Stroop testi šajā sesijā" : "Latest Stroop runs in this session",
+    runs: language === "lv" ? "Testi" : "Runs",
+    bestAccuracy: language === "lv" ? "Labākā Precizitāte" : "Best Accuracy",
+    latestRuns: language === "lv" ? "Jaunākie Testi:" : "Latest Runs:",
   };
 
   const currentTrial = trials[currentIndex];
@@ -147,13 +153,22 @@ const StroopTest = ({ onBack, language }: StroopTestProps) => {
 
     if (currentIndex + 1 >= trials.length) {
       const totalTrials = trials.length;
-      const accuracy = totalTrials > 0 ? Math.round(((isCorrect ? correctCount + 1 : correctCount) / totalTrials) * 100) : 0;
+      const finalCorrect = isCorrect ? correctCount + 1 : correctCount;
+      const finalIncorrect = isCorrect ? incorrectCount : incorrectCount + 1;
+      const accuracy = totalTrials > 0 ? Math.round((finalCorrect / totalTrials) * 100) : 0;
 
-      saveTestResult("stroop", isCorrect ? correctCount + 1 : correctCount, {
+      setSessionRuns(prev => [...prev, {
+        correct: finalCorrect,
+        incorrect: finalIncorrect,
+        accuracy,
+        timestamp: new Date()
+      }]);
+
+      saveTestResult("stroop", finalCorrect, {
         accuracy,
         totalTrials,
-        correct: isCorrect ? correctCount + 1 : correctCount,
-        incorrect: isCorrect ? incorrectCount : incorrectCount + 1
+        correct: finalCorrect,
+        incorrect: finalIncorrect
       });
 
       setTestState("complete");
@@ -323,6 +338,55 @@ const StroopTest = ({ onBack, language }: StroopTestProps) => {
             )}
           </CardContent>
         </Card>
+
+        {sessionRuns.length > 0 && (
+          <Card className="bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "250ms" }}>
+            <CardHeader>
+              <CardTitle>{t.sessionResults}</CardTitle>
+              <CardDescription>{t.sessionResultsDescription}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center mb-6">
+                <div className="space-y-1">
+                  <div className="text-2xl font-bold text-cognitive-accent">{sessionRuns.length}</div>
+                  <div className="text-sm text-muted-foreground">{t.runs}</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-2xl font-bold text-cognitive-primary">
+                    {Math.round(sessionRuns.reduce((sum, run) => sum + run.accuracy, 0) / sessionRuns.length)}%
+                  </div>
+                  <div className="text-sm text-muted-foreground">{t.accuracy}</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-2xl font-bold text-cognitive-success">
+                    {Math.max(...sessionRuns.map(run => run.accuracy), 0)}%
+                  </div>
+                  <div className="text-sm text-muted-foreground">{t.bestAccuracy}</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-2xl font-bold text-cognitive-warning">
+                    {sessionRuns.reduce((sum, run) => sum + run.correct, 0)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">{t.correct}</div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-2">{t.latestRuns}</h4>
+                <div className="space-y-2">
+                  {sessionRuns.slice(-5).reverse().map((run, index) => (
+                    <div key={`${run.timestamp.toISOString()}-${index}`} className="p-3 rounded-lg border border-border/40 bg-muted/20">
+                      <div className="flex justify-between items-center text-sm">
+                        <span>{t.correct}: {run.correct} • {t.incorrect}: {run.incorrect} • {t.accuracy}: {run.accuracy}%</span>
+                        <span className="text-muted-foreground">{run.timestamp.toLocaleTimeString()}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
