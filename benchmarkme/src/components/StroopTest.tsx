@@ -13,17 +13,22 @@ import { useTestResults } from "@/hooks/useTestResults";
 import LanguageSwitch from "@/components/LanguageSwitch";
 import ThemeToggle from "@/components/ThemeToggle";
 
+// Komponentes rekvizīti
 interface StroopTestProps {
   onBack: () => void;
   language: "lv" | "en";
 }
 
+// Testa kopējie stāvokļi
 type TestState = "ready" | "active" | "complete";
 
+// Pieejamo krāsu atslēgas testa loģikai
 type ColorKey = "red" | "blue" | "green" | "yellow";
 
+// Viena testa sesija sastāv no 20 mēģinājumiem
 const TRIALS_COUNT = 20;
 
+// Krāsu konfigurācija teksta un pogu attēlošanai
 const COLORS: Array<{
   key: ColorKey;
   textClass: string;
@@ -57,6 +62,7 @@ interface Trial {
   isCongruent: boolean;
 }
 
+// Ģenerē mēģinājumu sarakstu ar ~50% saskaņotu un nesaskaņotu krāsu pāriem
 const buildTrials = () => {
   const trials: Trial[] = [];
   for (let i = 0; i < TRIALS_COUNT; i++) {
@@ -73,8 +79,10 @@ const buildTrials = () => {
 };
 
 const StroopTest = ({ onBack, language }: StroopTestProps) => {
+  // Funkcija rezultātu saglabāšanai datubāzē
   const { saveTestResult } = useTestResults();
 
+  // Testa un sesijas stāvokļa mainīgie
   const [testState, setTestState] = useState<TestState>("ready");
   const [trials, setTrials] = useState<Trial[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -83,6 +91,7 @@ const StroopTest = ({ onBack, language }: StroopTestProps) => {
   const [lastResult, setLastResult] = useState<"correct" | "incorrect" | null>(null);
   const [sessionRuns, setSessionRuns] = useState<Array<{ correct: number; incorrect: number; accuracy: number; timestamp: Date }>>([]);
 
+  // Lokalizēts krāsu nosaukums atkarībā no izvēlētās valodas
   const getColorLabel = (color: ColorKey) => {
     const map = {
       red: language === "lv" ? "Sarkans" : "Red",
@@ -121,6 +130,7 @@ const StroopTest = ({ onBack, language }: StroopTestProps) => {
 
   const currentTrial = trials[currentIndex];
 
+  // Inicializē jaunu testa skrējienu
   const startTest = () => {
     const newTrials = buildTrials();
     setTrials(newTrials);
@@ -131,6 +141,7 @@ const StroopTest = ({ onBack, language }: StroopTestProps) => {
     setTestState("active");
   };
 
+  // Pilnībā atiestata testa ekrānu uz sākuma stāvokli
   const resetTest = () => {
     setTestState("ready");
     setTrials([]);
@@ -140,6 +151,7 @@ const StroopTest = ({ onBack, language }: StroopTestProps) => {
     setLastResult(null);
   };
 
+  // Apstrādā lietotāja atbildi, atjauno statistiku un pabeidz testu, kad sasniegts pēdējais mēģinājums
   const handleAnswer = (selected: ColorKey) => {
     if (testState !== "active" || !currentTrial) return;
 
@@ -178,14 +190,17 @@ const StroopTest = ({ onBack, language }: StroopTestProps) => {
     setCurrentIndex(prev => prev + 1);
   };
 
+  // Reālā laika precizitātes aprēķins no jau atbildētajiem mēģinājumiem
   const accuracy = useMemo(() => {
     const total = correctCount + incorrectCount;
     if (total === 0) return 0;
     return Math.round((correctCount / total) * 100);
   }, [correctCount, incorrectCount]);
 
+  // Informācijai: cik mēģinājumi ir saskaņoti (vārds = tintes krāsa)
   const congruentCount = useMemo(() => trials.filter(trial => trial.isCongruent).length, [trials]);
 
+  // Sagatavo pašreizējā mēģinājuma vizuālos datus
   const inkColor = currentTrial ? COLORS.find(color => color.key === currentTrial.ink) : null;
   const wordLabel = currentTrial ? getColorLabel(currentTrial.word) : "";
 

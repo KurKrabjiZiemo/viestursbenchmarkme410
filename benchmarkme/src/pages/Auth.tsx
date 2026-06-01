@@ -3,19 +3,16 @@
  * DATNE: AUTH.TSX - AUTENTIFIKĀCIJAS LAPAS KOMPONENTE
  * APRAKSTS: LIETOTĀJA PIETEIKŠANĀS UN REĢISTRĀCIJAS SASKARNE,
  *           IETVER FORMU VALIDĀCIJU UN AUTENTIFIKĀCIJAS LOĢIKU
- * VERSIJA: 2026. GADA MARTA VERSIJA
+ * VERSIJA: 2026. GADA MAIJA VERSIJA
  */
-// Importē nepieciešamos React hook-us un komponentus
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Brain, Eye, EyeOff } from "lucide-react";
-// Importē UI komponentus
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-// Importē autentifikācijas hook
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import LanguageSwitch from "@/components/LanguageSwitch";

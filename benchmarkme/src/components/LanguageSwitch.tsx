@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: LANGUAGESWITCH.TSX - VALODAS PĀRSLĒGŠANAS KOMPONENTE
+ * APRAKSTS: ĀTRA VALODAS MAIŅA STARP LATVIEŠU UN ANGĻU VALODU,
+ *           IZMANTO KOPĒJO VALODAS KONTEKSTU
+ * VERSIJA: 2026. GADA MAIJA VERSIJA
+ */
 import { Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -7,6 +14,7 @@ interface LanguageSwitchProps {
 }
 
 const LanguageSwitch = ({ className = "" }: LanguageSwitchProps) => {
+  // Nolasa aktīvo valodu un pārslēgšanas funkciju no konteksta.
   const { language, toggleLanguage } = useLanguage();
 
   return (

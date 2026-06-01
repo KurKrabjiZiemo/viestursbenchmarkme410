@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: THEMETOGGLE.TSX - TĒMAS PĀRSLĒGŠANAS KOMPONENTE
+ * APRAKSTS: GAIŠĀS/TUMŠĀS TĒMAS PĀRSLĒGŠANAS POGA,
+ *           KAS BALSTĀS UZ GLOBĀLO TĒMAS KONTEKSTU
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/useTheme";
@@ -7,6 +14,7 @@ interface ThemeToggleProps {
 }
 
 const ThemeToggle = ({ className = "" }: ThemeToggleProps) => {
+  // Nodrošina pieeju aktīvajai tēmai un pārslēgšanas loģikai.
   const { theme, toggleTheme } = useTheme();
 
   return (

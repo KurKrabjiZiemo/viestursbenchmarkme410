@@ -22,7 +22,7 @@ import NumberMemoryTest from "@/components/NumberMemoryTest";
 import TypingTest from "@/components/TypingTest";
 import StroopTest from "@/components/StroopTest";
 
-// Tulkojums jo stulbais db
+// Vienādo testa tipu nosaukumus no dažādiem backend formātiem priekš UI attēlošanas.
 const translateTestType = (testType: string, language: "lv" | "en"): string => {
   const translations: Record<string, { lv: string; en: string }> = {
     reaction: { lv: "Reakcijas laiks", en: "Reaction time" },
