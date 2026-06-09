@@ -360,7 +360,7 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 min-[1400px]:pr-[clamp(100px,34vw,250px)]">
+    <div className="container mx-auto px-4 py-8 min-[1400px]:pr-[clamp(100px,34vw,200px)]">
       <div className="fixed right-4 top-4 z-20 flex gap-2">
         <ThemeToggle />
         <LanguageSwitch />
