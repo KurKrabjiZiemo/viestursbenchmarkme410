@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: TYPINGTEST.TSX - RAKSTĪŠANAS ĀTRUMA TESTA KOMPONENTE
+ * APRAKSTS: WPM UN PRECIZITĀTES TESTS AR TAIMERI,
+ *           TEKSTA SALĪDZINĀŠANU REĀLLAIKĀ UN REZULTĀTU SAGLABĀŠANU
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 import { useState, useEffect, useRef, useCallback } from "react";
 import { ArrowLeft, Play, RotateCcw, Keyboard, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,16 +14,21 @@ import { useTestResults } from "@/hooks/useTestResults";
 import LanguageSwitch from "@/components/LanguageSwitch";
 import ThemeToggle from "@/components/ThemeToggle";
 
+// Komponentes rekvizīti
 interface TypingTestProps {
   onBack: () => void;
   language: "lv" | "en";
 }
 
+// Testa ekrāna stāvokļi
 type TestState = "ready" | "countdown" | "active" | "complete";
 
+// Aktīvā testa ilgums sekundēs
 const TEST_DURATION = 60;
+// Pirms testa sākuma atpakaļskaitīšana sekundēs
 const COUNTDOWN_DURATION = 5;
 
+// Paraugteksti latviešu valodā
 const SAMPLE_TEXTS_LV = [
   "Mūsdienās cilvēki daudz laika pavada pie datora vai telefona. Tas nozīmē, ka rakstīšanas prasmes kļūst arvien svarīgākas. Ja cilvēks spēj rakstīt ātri un bez kļūdām, viņš var efektīvāk paveikt savus darbus. Tāpēc ir vērts regulāri trenēties.",
   "Mūsdienās cilvēki daudz laika pavada pie datora vai telefona. Tas nozīmē, ka rakstīšanas prasmes kļūst arvien svarīgākas. Ja cilvēks spēj rakstīt ātri un bez kļūdām, viņš var efektīvāk paveikt savus darbus. Tāpēc ir vērts regulāri trenēties.",
@@ -30,8 +42,10 @@ const SAMPLE_TEXTS_EN = [
 ];
 
 const TypingTest = ({ onBack, language }: TypingTestProps) => {
+  // Funkcija rezultātu saglabāšanai datubāzē
   const { saveTestResult } = useTestResults();
 
+  // Testa stāvokļa un statistikas mainīgie
   const [testState, setTestState] = useState<TestState>("ready");
   const [testText, setTestText] = useState("");
   const [userInput, setUserInput] = useState("");
@@ -42,6 +56,7 @@ const TypingTest = ({ onBack, language }: TypingTestProps) => {
   const [accuracy, setAccuracy] = useState(100);
   const [attempts, setAttempts] = useState<{ wpm: number; accuracy: number; timestamp: Date }[]>([]);
 
+  // Atsauce uz ievades lauku automātiskai fokusēšanai
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const t = {
@@ -76,6 +91,7 @@ const TypingTest = ({ onBack, language }: TypingTestProps) => {
   };
 
   const startTest = () => {
+    // Katram mēģinājumam izvēlas nejaušu paraugtekstu, lai samazinātu iemācīšanās efektu.
     const sourceTexts = language === "lv" ? SAMPLE_TEXTS_LV : SAMPLE_TEXTS_EN;
     const randomText = sourceTexts[Math.floor(Math.random() * sourceTexts.length)];
     setTestText(randomText);
@@ -86,12 +102,14 @@ const TypingTest = ({ onBack, language }: TypingTestProps) => {
     setTestState("countdown");
   };
 
+  // Aprēķina vārdus minūtē pēc ievadītā teksta un pagājušā laika
   const calculateWPM = (text: string, timeElapsed: number) => {
     const words = text.trim().split(/\s+/).length;
     const minutes = timeElapsed / 60000;
     return Math.max(0, Math.round(words / Math.max(minutes, 0.01)));
   };
 
+  // Simbolu-līmeņa precizitāte: salīdzina ievadīto tekstu pret paraugtekstu
   const calculateAccuracy = (original: string, typed: string) => {
     if (typed.length === 0) return 100;
     let correct = 0;
@@ -105,6 +123,7 @@ const TypingTest = ({ onBack, language }: TypingTestProps) => {
   };
 
   const endTest = useCallback((typedText?: string) => {
+    // Vienots noslēguma ceļš gan taimera beigām, gan pilnībā ievadītam tekstam.
     const input = typedText ?? userInput;
     if (startTime) {
       const finalWPM = calculateWPM(input, Date.now() - startTime);
@@ -122,11 +141,13 @@ const TypingTest = ({ onBack, language }: TypingTestProps) => {
     setTestState("complete");
   }, [startTime, userInput, testText, saveTestResult]);
 
+  // Stabilizē endTest piekļuvi no interval callback, lai izvairītos no "stale closure"
   const endTestRef = useRef(endTest);
   useEffect(() => {
     endTestRef.current = endTest;
   }, [endTest]);
 
+  // Apstrādā lietotāja ievadi un reāllaikā atjauno WPM/precizitāti
   const handleInputChange = (value: string) => {
     if (testState !== "active") return;
 
@@ -143,6 +164,7 @@ const TypingTest = ({ onBack, language }: TypingTestProps) => {
     }
   };
 
+  // Atiestata testu sākuma režīmā bez mēģinājumu vēstures dzēšanas
   const resetTest = () => {
     setTestState("ready");
     setTestText("");
@@ -174,6 +196,7 @@ const TypingTest = ({ onBack, language }: TypingTestProps) => {
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
 
+    // Countdown fāzē skaita uz leju līdz testa aktivizēšanai
     if (testState === "countdown") {
       interval = setInterval(() => {
         setCountdownLeft((prev) => {
@@ -187,6 +210,7 @@ const TypingTest = ({ onBack, language }: TypingTestProps) => {
           return prev - 1;
         });
       }, 1000);
+    // Aktīvajā fāzē samazina atlikušo laiku un beidz testu pie 0
     } else if (testState === "active") {
       interval = setInterval(() => {
         setTimeLeft((prev) => {
@@ -204,6 +228,7 @@ const TypingTest = ({ onBack, language }: TypingTestProps) => {
     };
   }, [testState]);
 
+  // Iezīmē katru vārdu pēc statusa: pareizi ievadīts, kļūdains, pašreizējais vai vēl neievadīts
   const renderTextWithHighlight = () => {
     const words = testText.split(" ");
     const typedWords = userInput.split(" ");

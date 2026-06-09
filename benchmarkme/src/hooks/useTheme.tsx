@@ -1,3 +1,10 @@
+/**
+ * AUTORS: VIESTURS IVANCOVS
+ * DATNE: USETHEME.TSX - TĒMAS KONTEKSTA HOOK
+ * APRAKSTS: GLOBĀLĀ GAIŠĀS/TUMŠĀS TĒMAS PĀRVALDĪBA,
+ *           SINHRONIZĒ CSS KLASES UN LOCALSTORAGE STĀVOKLI
+ * VERSIJA: 2026. GADA MARTA VERSIJA
+ */
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 export type Theme = "dark" | "light";
@@ -12,6 +19,7 @@ const STORAGE_KEY = "appTheme";
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const getInitialTheme = (): Theme => {
+  // Ja nav saglabātas izvēles, lietotne startē tumšajā tēmā.
   const saved = localStorage.getItem(STORAGE_KEY);
   return saved === "light" ? "light" : "dark";
 };
@@ -29,7 +37,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem(STORAGE_KEY, theme);
   }, [theme]);
 
-  // Apply immediately on mount (before first render)
+  // Nodrošina korektu tēmu jau pie pirmās ielādes, lai izvairītos no "flash" efekta.
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     const initial: Theme = saved === "light" ? "light" : "dark";

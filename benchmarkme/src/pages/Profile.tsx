@@ -8,7 +8,7 @@
 // Importē nepieciešamos React hook-us un komponentus
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Home, KeyRound, LogOut, Mail, Pencil, Upload, User, X } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Home, KeyRound, LogOut, Mail, Pencil, Upload, User, X } from "lucide-react";
 // Importē UI komponentus
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -47,6 +47,7 @@ type EditorSection = "username" | "picture" | "email" | "password" | null;
 const MAX_PROFILE_IMAGE_SIZE = 2 * 1024 * 1024;
 
 const isValidEmail = (email: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const isStrongPassword = (value: string): boolean => /^(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$/.test(value);
 
 // Profila lapa - rāda lietotāja informāciju
 const Profile = () => {
@@ -69,6 +70,14 @@ const Profile = () => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordValidationError, setPasswordValidationError] = useState("");
+  const [passwordValidationAttempts, setPasswordValidationAttempts] = useState(0);
+  const [passwordMismatchError, setPasswordMismatchError] = useState("");
+  const [passwordMismatchAttempts, setPasswordMismatchAttempts] = useState(0);
+  const [showEmailPassword, setShowEmailPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [activeEditor, setActiveEditor] = useState<EditorSection>(null);
 
   const t = {
@@ -115,7 +124,7 @@ const Profile = () => {
     passwordMismatchTitle: language === "lv" ? "Paroles nesakrīt" : "Passwords do not match",
     passwordMismatchDescription: language === "lv" ? "Jaunajai parolei un apstiprinājumam jāsakrīt." : "The new password and confirmation must match.",
     invalidPasswordTitle: language === "lv" ? "Nederīga parole" : "Invalid password",
-    invalidPasswordDescription: language === "lv" ? "Jaunajai parolei jābūt vismaz 6 rakstzīmes garai." : "The new password must be at least 6 characters long.",
+    invalidPasswordDescription: language === "lv" ? "Jaunajai parolei jābūt vismaz 8 rakstzīmēm, vienam ciparam un vienam simbolam." : "New password must be at least 8 characters and include one number and one symbol.",
     invalidImageTitle: language === "lv" ? "Nederīga bilde" : "Invalid image",
     invalidImageDescription: language === "lv" ? "Vari augšupielādēt tikai PNG, JPG, GIF vai WEBP failu līdz 2 MB." : "You can upload only PNG, JPG, GIF, or WEBP files up to 2 MB.",
     passwordHidden: language === "lv" ? "Drošības nolūkos parole netiek rādīta" : "Password is hidden for security",
@@ -175,12 +184,20 @@ const Profile = () => {
     if (section === "email") {
       setNewEmail(profile?.email || user?.email || "");
       setEmailPassword("");
+      setShowEmailPassword(false);
       return;
     }
 
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
+    setPasswordValidationError("");
+    setPasswordValidationAttempts(0);
+    setPasswordMismatchError("");
+    setPasswordMismatchAttempts(0);
+    setShowCurrentPassword(false);
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
   };
 
   const toggleEditor = (section: Exclude<EditorSection, null>) => {
@@ -373,23 +390,23 @@ const Profile = () => {
   const handlePasswordSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (newPassword.length < 6) {
-      toast({
-        title: t.invalidPasswordTitle,
-        description: t.invalidPasswordDescription,
-        variant: "destructive",
-      });
+    if (!isStrongPassword(newPassword)) {
+      setPasswordValidationError(t.invalidPasswordDescription);
+      setPasswordValidationAttempts((current) => current + 1);
       return;
     }
 
+    setPasswordValidationError("");
+    setPasswordValidationAttempts(0);
+
     if (newPassword !== confirmPassword) {
-      toast({
-        title: t.passwordMismatchTitle,
-        description: t.passwordMismatchDescription,
-        variant: "destructive",
-      });
+      setPasswordMismatchError(t.passwordMismatchDescription);
+      setPasswordMismatchAttempts((current) => current + 1);
       return;
     }
+
+    setPasswordMismatchError("");
+    setPasswordMismatchAttempts(0);
 
     setIsSavingPassword(true);
 
@@ -405,6 +422,13 @@ const Profile = () => {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      setPasswordValidationError("");
+      setPasswordValidationAttempts(0);
+      setPasswordMismatchError("");
+      setPasswordMismatchAttempts(0);
+      setShowCurrentPassword(false);
+      setShowNewPassword(false);
+      setShowConfirmPassword(false);
       setActiveEditor(null);
       toast({
         title: t.passwordUpdated,
@@ -489,7 +513,7 @@ const Profile = () => {
           </CardHeader>
           <CardContent className="space-y-8">
             {activeEditor === "picture" && (
-              <form onSubmit={handlePictureSubmit} className="animate-in fade-in-0 slide-in-from-top-2 duration-200 space-y-4 rounded-xl border border-border/50 p-4">
+              <form noValidate onSubmit={handlePictureSubmit} className="animate-in fade-in-0 slide-in-from-top-2 duration-200 space-y-4 rounded-xl border border-border/50 p-4">
                 <div className="space-y-3">
                   <Label htmlFor="profile-picture">{t.profilePicture}</Label>
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -534,7 +558,7 @@ const Profile = () => {
                   </Button>
                 </div>
                 {activeEditor === "email" && (
-                  <form onSubmit={handleEmailSubmit} className="animate-in fade-in-0 slide-in-from-top-2 duration-200 mt-4 space-y-4 border-t border-border/50 pt-4">
+                  <form noValidate onSubmit={handleEmailSubmit} className="animate-in fade-in-0 slide-in-from-top-2 duration-200 mt-4 space-y-4 border-t border-border/50 pt-4">
                     <p className="text-sm text-muted-foreground">{t.emailSettingsDescription}</p>
                     <div className="space-y-2">
                       <Label htmlFor="new-email">{t.newEmail}</Label>
@@ -548,13 +572,24 @@ const Profile = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email-password">{t.currentPasswordForEmail}</Label>
-                      <Input
-                        id="email-password"
-                        type="password"
-                        value={emailPassword}
-                        onChange={(event) => setEmailPassword(event.target.value)}
-                        required
-                      />
+                      <div className="relative">
+                        <Input
+                          id="email-password"
+                          type={showEmailPassword ? "text" : "password"}
+                          value={emailPassword}
+                          onChange={(event) => setEmailPassword(event.target.value)}
+                          required
+                          className="pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowEmailPassword((current) => !current)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          aria-label={showEmailPassword ? "Hide password" : "Show password"}
+                        >
+                          {showEmailPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
                     </div>
                     <div className="flex flex-col gap-3 sm:flex-row">
                       <Button type="submit" className="flex-1" disabled={isSavingEmail}>
@@ -580,7 +615,7 @@ const Profile = () => {
                   </Button>
                 </div>
                 {activeEditor === "username" && (
-                  <form onSubmit={handleProfileSubmit} className="animate-in fade-in-0 slide-in-from-top-2 duration-200 mt-4 space-y-4 border-t border-border/50 pt-4">
+                  <form noValidate onSubmit={handleProfileSubmit} className="animate-in fade-in-0 slide-in-from-top-2 duration-200 mt-4 space-y-4 border-t border-border/50 pt-4">
                     <div className="space-y-2">
                       <Label htmlFor="username">{t.username}</Label>
                       <Input
@@ -616,39 +651,109 @@ const Profile = () => {
                   </Button>
                 </div>
                 {activeEditor === "password" && (
-                  <form onSubmit={handlePasswordSubmit} className="animate-in fade-in-0 slide-in-from-top-2 duration-200 mt-4 space-y-4 border-t border-border/50 pt-4">
+                  <form noValidate onSubmit={handlePasswordSubmit} className="animate-in fade-in-0 slide-in-from-top-2 duration-200 mt-4 space-y-4 border-t border-border/50 pt-4">
                     <p className="text-sm text-muted-foreground">{t.passwordSettingsDescription}</p>
                     <div className="space-y-2">
                       <Label htmlFor="current-password">{t.currentPassword}</Label>
-                      <Input
-                        id="current-password"
-                        type="password"
-                        value={currentPassword}
-                        onChange={(event) => setCurrentPassword(event.target.value)}
-                        required
-                      />
+                      <div className="relative">
+                        <Input
+                          id="current-password"
+                          type={showCurrentPassword ? "text" : "password"}
+                          value={currentPassword}
+                          onChange={(event) => setCurrentPassword(event.target.value)}
+                          required
+                          className="pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowCurrentPassword((current) => !current)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          aria-label={showCurrentPassword ? "Hide password" : "Show password"}
+                        >
+                          {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="new-password">{t.newPassword}</Label>
-                      <Input
-                        id="new-password"
-                        type="password"
-                        value={newPassword}
-                        onChange={(event) => setNewPassword(event.target.value)}
-                        minLength={6}
-                        required
-                      />
+                      <div className="relative">
+                        <Input
+                          id="new-password"
+                          type={showNewPassword ? "text" : "password"}
+                          value={newPassword}
+                          onChange={(event) => {
+                            const nextValue = event.target.value;
+                            setNewPassword(nextValue);
+
+                            if (passwordValidationError && isStrongPassword(nextValue)) {
+                              setPasswordValidationError("");
+                              setPasswordValidationAttempts(0);
+                            }
+
+                            if (passwordMismatchError && nextValue === confirmPassword) {
+                              setPasswordMismatchError("");
+                              setPasswordMismatchAttempts(0);
+                            }
+                          }}
+                          required
+                          className="pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPassword((current) => !current)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          aria-label={showNewPassword ? "Hide password" : "Show password"}
+                        >
+                          {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      {passwordValidationError && (
+                        <p
+                          key={`profile-password-error-${passwordValidationAttempts}`}
+                          className={`rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive ${passwordValidationAttempts > 1 ? "field-error-shake" : "field-error-popup"}`}
+                          role="alert"
+                        >
+                          {passwordValidationError}
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="confirm-password">{t.confirmPassword}</Label>
-                      <Input
-                        id="confirm-password"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(event) => setConfirmPassword(event.target.value)}
-                        minLength={6}
-                        required
-                      />
+                      <div className="relative">
+                        <Input
+                          id="confirm-password"
+                          type={showConfirmPassword ? "text" : "password"}
+                          value={confirmPassword}
+                          onChange={(event) => {
+                            const nextValue = event.target.value;
+                            setConfirmPassword(nextValue);
+
+                            if (passwordMismatchError && newPassword === nextValue) {
+                              setPasswordMismatchError("");
+                              setPasswordMismatchAttempts(0);
+                            }
+                          }}
+                          required
+                          className="pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword((current) => !current)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                        >
+                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      {passwordMismatchError && (
+                        <p
+                          key={`profile-password-mismatch-${passwordMismatchAttempts}`}
+                          className={`rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive ${passwordMismatchAttempts > 1 ? "field-error-shake" : "field-error-popup"}`}
+                          role="alert"
+                        >
+                          {passwordMismatchError}
+                        </p>
+                      )}
                     </div>
                     <div className="flex flex-col gap-3 sm:flex-row">
                       <Button type="submit" className="flex-1" disabled={isSavingPassword}>

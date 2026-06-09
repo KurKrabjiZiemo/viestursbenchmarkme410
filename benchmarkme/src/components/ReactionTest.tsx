@@ -5,14 +5,10 @@
  *           UZ VIZĀLU SIGNĀLU PĒC IESPĒJAS ĀTRĀK
  * VERSIJA: 2026. GADA MARTA VERSIJA
  */
-// Importē nepieciešamos React hook-us
 import { useState, useEffect, useRef } from "react";
-// Importē ikonas
 import { ArrowLeft, Play, RotateCcw, Zap } from "lucide-react";
-// Importē UI komponentus
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-// Importē hook rezultātu saglabāšanai
 import { useTestResults } from "@/hooks/useTestResults";
 import LanguageSwitch from "@/components/LanguageSwitch";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -67,8 +63,8 @@ const ReactionTest = ({ onBack, language }: ReactionTestProps) => {
   
   // Atsauces precīzai laika mērīšanai
   const startTimeRef = useRef<number>(0); // Testa sākuma laiks
-  const timeoutRef = useRef<NodeJS.Timeout>(); // Taimera atsauce
-  const countdownIntervalRef = useRef<NodeJS.Timeout>(); // Atpakaļskaitīšanas intervāla atsauce
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null); // Taimera atsauce
+  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null); // Atpakaļskaitīšanas intervāla atsauce
 
   // Sāk testu ar atpakaļskaitīšanu un gadījuma aizkavi
   const startTest = () => {

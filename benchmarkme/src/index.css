@@ -139,3 +139,45 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes fieldErrorPop {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fieldErrorShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+}
+
+.field-error-popup {
+  animation: fieldErrorPop 220ms ease-out;
+}
+
+.field-error-shake {
+  animation: fieldErrorShake 260ms ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field-error-popup,
+  .field-error-shake {
+    animation: none;
+  }
+}

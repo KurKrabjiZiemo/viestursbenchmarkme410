@@ -5,15 +5,11 @@
  *           UN JĀIEVADA AIZVIEN GARĀKAS CIPARU VIRKNES
  * VERSIJA: 2026. GADA MARTA VERSIJA
  */
-// Importē nepieciešamos React hook-us
 import { useState, useEffect } from "react";
-// Importē ikonas
 import { ArrowLeft, Play, RotateCcw, Hash, Eye, EyeOff } from "lucide-react";
-// Importē UI komponentus
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-// Importē hook rezultātu saglabāšanai
 import { useTestResults } from "@/hooks/useTestResults";
 import LanguageSwitch from "@/components/LanguageSwitch";
 import ThemeToggle from "@/components/ThemeToggle";

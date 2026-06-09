@@ -5,7 +5,7 @@
  *           IETVER TESTU IZVĒLI, NAVIGĀCIJU UN SNIEGUMA IZSEKOŠANU
  * VERSIJA: 2026. GADA MARTA VERSIJA
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Brain, Zap, Target, Timer, TrendingUp, Hash, Keyboard, User, BarChart3, Palette, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ import NumberMemoryTest from "@/components/NumberMemoryTest";
 import TypingTest from "@/components/TypingTest";
 import StroopTest from "@/components/StroopTest";
 
-// Tulkojums jo stulbais db
+// Vienādo testa tipu nosaukumus no dažādiem backend formātiem priekš UI attēlošanas.
 const translateTestType = (testType: string, language: "lv" | "en"): string => {
   const translations: Record<string, { lv: string; en: string }> = {
     reaction: { lv: "Reakcijas laiks", en: "Reaction time" },
@@ -53,6 +53,7 @@ type LeaderboardTestType = "reaction" | "memory" | "number_memory" | "typing" | 
 interface LeaderboardRow {
   user_id: number;
   username: string;
+  profile_picture?: string | null;
   best_score: number;
   last_played_at: string;
   attempts_count?: number | null;
@@ -66,10 +67,13 @@ interface LeaderboardRow {
 interface RecentResultRow {
   user_id: number;
   username: string;
+  profile_picture?: string | null;
   test_type: string;
   score: number;
   created_at: string;
 }
+
+const MAX_RECENT_ACTIVITY_ITEMS = 12;
 
 // Galvenā sākumlapas komponente
 const Index = () => {
@@ -118,6 +122,31 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
   const [selectedLeaderboardTest, setSelectedLeaderboardTest] = useState<LeaderboardTestType>("reaction");
   const [leaderboardRows, setLeaderboardRows] = useState<LeaderboardRow[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
+  const leaderboardRequestInFlightRef = useRef(false);
+  const leaderboardHasLoadedRef = useRef(false);
+
+  const areLeaderboardRowsEqual = (left: LeaderboardRow[], right: LeaderboardRow[]): boolean => {
+    if (left.length !== right.length) {
+      return false;
+    }
+
+    return left.every((row, index) => {
+      const next = right[index];
+      return (
+        row.user_id === next.user_id &&
+        row.username === next.username &&
+        row.profile_picture === next.profile_picture &&
+        row.best_score === next.best_score &&
+        row.last_played_at === next.last_played_at &&
+        row.attempts_count === next.attempts_count &&
+        row.level_reached === next.level_reached &&
+        row.accuracy_percent === next.accuracy_percent &&
+        row.points === next.points &&
+        row.average_time_ms === next.average_time_ms &&
+        row.digits_remembered === next.digits_remembered
+      );
+    });
+  };
 
   const t = {
     leaderboard: "Leaderboard",
@@ -135,6 +164,7 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
     start: language === "lv" ? "Sākt!" : "Start!",
     recentActivity: language === "lv" ? "Jaunākās aktivitātes" : "Recent Activity",
     latestResults: language === "lv" ? "Tavi jaunākie testa rezultāti" : "Your latest test results",
+    showingLatest: language === "lv" ? `Rāda jaunākos ${MAX_RECENT_ACTIVITY_ITEMS} ierakstus` : `Showing latest ${MAX_RECENT_ACTIVITY_ITEMS} entries`,
     score: language === "lv" ? "Rezultāts" : "Score",
     level: language === "lv" ? "Līmenis" : "Level",
     accuracy: language === "lv" ? "Precizitāte" : "Accuracy",
@@ -149,16 +179,16 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
     if (!user) return;
 
     const fetchResults = async () => {
-  try {
-    // SVARĪGI <TestResult[]> norāda atgriežamo tipu
-    const data = await apiRequest<TestResult[] >('/test-results/all');
-    setResults(data);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error('Kļūda ielādējot rezultātus:', error.message);
-    }
-  }
-};
+      try {
+        // SVARĪGI <TestResult[]> norāda atgriežamo tipu
+        const data = await apiRequest<TestResult[]>('/test-results/all');
+        setResults(data.slice(0, MAX_RECENT_ACTIVITY_ITEMS));
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error('Kļūda ielādējot rezultātus:', error.message);
+        }
+      }
+    };
 
 
     fetchResults();
@@ -184,6 +214,7 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
           byUser.set(item.user_id, {
             user_id: item.user_id,
             username: item.username,
+            profile_picture: item.profile_picture || null,
             best_score: Number(item.score),
             last_played_at: item.created_at
           });
@@ -201,6 +232,10 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
         if (new Date(item.created_at) > new Date(current.last_played_at)) {
           current.last_played_at = item.created_at;
         }
+
+        if (!current.profile_picture && item.profile_picture) {
+          current.profile_picture = item.profile_picture;
+        }
       });
 
       const sortDirection = selectedLeaderboardTest === 'reaction' ? 1 : -1;
@@ -214,35 +249,56 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
         .slice(0, 10);
     };
 
-    const fetchLeaderboard = async () => {
-      try {
+    const fetchLeaderboard = async (showLoadingState: boolean) => {
+      if (leaderboardRequestInFlightRef.current) {
+        return;
+      }
+
+      leaderboardRequestInFlightRef.current = true;
+
+      if (showLoadingState) {
         setLeaderboardLoading(true);
+      }
+
+      let nextRows: LeaderboardRow[] | null = null;
+
+      try {
         const data = await apiRequest<{ results: LeaderboardRow[] }>(
           `/test-results/leaderboard?testType=${selectedLeaderboardTest}&limit=10`
         );
-        setLeaderboardRows(data.results);
+        nextRows = data.results;
       } catch (error: unknown) {
         try {
           // Fallback for older backend instances that do not yet expose /leaderboard
           const recent = await apiRequest<RecentResultRow[]>(`/test-results/recent?limit=200`);
-          const derivedRows = buildLeaderboardFromRecent(recent);
-          setLeaderboardRows(derivedRows);
+          nextRows = buildLeaderboardFromRecent(recent);
         } catch (fallbackError: unknown) {
           if (fallbackError instanceof Error) {
             console.error('Kļūda ielādējot leaderboard:', fallbackError.message);
           }
-          setLeaderboardRows([]);
         }
       } finally {
-        setLeaderboardLoading(false);
+        if (nextRows) {
+          setLeaderboardRows((currentRows) => (areLeaderboardRowsEqual(currentRows, nextRows!) ? currentRows : nextRows!));
+          leaderboardHasLoadedRef.current = true;
+        } else if (!leaderboardHasLoadedRef.current) {
+          setLeaderboardRows([]);
+        }
+
+        if (showLoadingState) {
+          setLeaderboardLoading(false);
+        }
+
+        leaderboardRequestInFlightRef.current = false;
       }
     };
 
-    fetchLeaderboard();
+    leaderboardHasLoadedRef.current = false;
+    fetchLeaderboard(true);
 
     const intervalId = setInterval(() => {
       if (document.visibilityState === 'visible') {
-        fetchLeaderboard();
+        fetchLeaderboard(false);
       }
     }, 5000);
 
@@ -276,6 +332,29 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
       .join('');
 
     return initials || 'U';
+  };
+
+  const getAvatarSrc = (value?: string | null): string | null => {
+    if (!value) {
+      return null;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    // Supported direct formats from backend/profile settings.
+    if (/^data:image\/(png|jpe?g|gif|webp);base64,/i.test(trimmed) || /^https?:\/\//i.test(trimmed)) {
+      return trimmed;
+    }
+
+    // Backward-compatible fallback: raw base64 payload without data-url prefix.
+    if (/^[A-Za-z0-9+/=\r\n]+$/.test(trimmed)) {
+      return `data:image/png;base64,${trimmed.replace(/\s+/g, '')}`;
+    }
+
+    return null;
   };
 
   const getLeaderboardDetails = (testType: LeaderboardTestType, row: LeaderboardRow): string[] => {
@@ -442,10 +521,12 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
               <TrendingUp className="w-5 h-5 text-cognitive-success" />
               {t.recentActivity}
             </CardTitle>
-            <CardDescription>{t.latestResults}</CardDescription>
+            <CardDescription>
+              {t.latestResults} • {t.showingLatest}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
               {results.map((result) => (
                 <div key={result.id} className="flex justify-between items-center p-3 rounded-lg bg-muted/20">
                   <div>
@@ -494,17 +575,32 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
                 {leaderboardRows.map((row, index) => {
                   const isCurrentUser = user?.id === row.user_id;
                   const details = getLeaderboardDetails(selectedLeaderboardTest, row);
+                  const avatarSrc = getAvatarSrc(row.profile_picture);
                   return (
                     <div
-                      key={`${row.user_id}-${index}`}
+                      key={row.user_id}
                       className={`p-2.5 rounded-lg border ${isCurrentUser ? 'bg-cognitive-primary/10 border-cognitive-primary/40' : 'bg-muted/20 border-border/30'}`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="min-w-0 pr-2">
-                          <p className="font-semibold text-sm leading-tight truncate">
-                            #{index + 1} {row.username}
-                            {isCurrentUser ? ` ${t.you}` : ''}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-cognitive-secondary/35 text-cognitive-secondary-foreground flex items-center justify-center text-[11px] font-bold">
+                              {avatarSrc ? (
+                                <img
+                                  src={avatarSrc}
+                                  alt={row.username}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                getUserInitials(row.username)
+                              )}
+                            </div>
+                            <p className="font-semibold text-sm leading-tight truncate min-w-0">
+                              #{index + 1} {row.username}
+                              {isCurrentUser ? ` ${t.you}` : ''}
+                            </p>
+                          </div>
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {new Date(row.last_played_at).toLocaleDateString()}
                           </p>
@@ -580,10 +676,11 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
                     const isCurrentUser = user?.id === row.user_id;
                     const details = getLeaderboardDetails(selectedLeaderboardTest, row);
                     const scoreParts = formatLeaderboardScoreParts(selectedLeaderboardTest, row.best_score);
+                    const avatarSrc = getAvatarSrc(row.profile_picture);
 
                     return (
                       <div
-                        key={`${row.user_id}-${index}`}
+                        key={row.user_id}
                         className={`rounded-xl border px-4 py-3 ${
                           isCurrentUser
                             ? 'bg-cognitive-primary/10 border-cognitive-primary/50'
@@ -595,8 +692,17 @@ const Dashboard = ({ onStartTest, language }: { onStartTest: (test: TestType) =>
                             <p className={`text-lg font-semibold w-9 shrink-0 ${isCurrentUser ? 'text-cognitive-primary' : 'text-muted-foreground'}`}>
                               #{index + 1}
                             </p>
-                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${isCurrentUser ? 'bg-cognitive-primary/35 text-cognitive-primary-foreground' : 'bg-cognitive-secondary/35 text-cognitive-secondary-foreground'}`}>
-                              {getUserInitials(row.username)}
+                            <div className={`w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold shrink-0 ${isCurrentUser ? 'bg-cognitive-primary/35 text-cognitive-primary-foreground' : 'bg-cognitive-secondary/35 text-cognitive-secondary-foreground'}`}>
+                              {avatarSrc ? (
+                                <img
+                                  src={avatarSrc}
+                                  alt={row.username}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                getUserInitials(row.username)
+                              )}
                             </div>
                             <div className="min-w-0">
                               <p className="font-semibold text-base truncate">
