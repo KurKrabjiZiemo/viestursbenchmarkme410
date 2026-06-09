@@ -3,22 +3,20 @@
  * DATNE: DASHBOARD.TSX - LIETOTĀJA INFORMĀCIJAS PANEĻA KOMPONENTE
  * APRAKSTS: LIETOTĀJA STATISTIKAS, TESTU REZULTĀTU UN SNIEGUMA
  *           ANALĪZES PĀRSKATS AR VIZUĀLIEM DATIEM
- * VERSIJA: 2026. GADA MARTA VERSIJA
+ * VERSIJA: 2026. GADA MAIJA VERSIJA
  */
-// Importē nepieciešamos React hook-us un komponentus
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Brain, User, TrendingUp, Award, Calendar } from "lucide-react";
-// Importē UI komponentus
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-// Importē autentifikācijas hook un API utilītiju
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/api";
 import { useLanguage } from "@/hooks/useLanguage";
 import LanguageSwitch from "@/components/LanguageSwitch";
 import ThemeToggle from "@/components/ThemeToggle";
 
+// Vienādo testa tipu nosaukumus no dažādiem backend formātiem priekš UI attēlošanas.
 const translateTestType = (testType: string, language: "lv" | "en"): string => {
   const translations: Record<string, { lv: string; en: string }> = {
     reaction: { lv: "Reakcijas Laiks", en: "Reaction Time" },
@@ -187,25 +185,23 @@ const Dashboard = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="fixed right-4 top-4 z-20 flex gap-2">
-        <ThemeToggle />
-        <LanguageSwitch />
-      </div>
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
-        <div className="flex justify-between items-center animate-fade-in-up" style={{ animationDelay: "0ms" }}>
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between animate-fade-in-up" style={{ animationDelay: "0ms" }}>
+          <div className="flex items-center gap-3 justify-center md:justify-start">
             <Brain className="w-8 h-8 text-cognitive-primary" />
-            <h1 className="text-4xl font-bold">{t.title}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-center md:text-left">{t.title}</h1>
           </div>
-          <div className="flex gap-3">
-            <Button onClick={() => navigate("/profile")} variant="secondary">
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 sm:gap-3">
+            <Button onClick={() => navigate("/profile")} variant="secondary" size="sm">
               <User className="w-4 h-4 mr-2" />
               {t.profile}
             </Button>
-            <Button onClick={() => navigate("/")} className="bg-cognitive-primary hover:bg-cognitive-primary/80">
+            <Button onClick={() => navigate("/")} size="sm" className="bg-cognitive-primary hover:bg-cognitive-primary/80">
               {t.takeTests}
             </Button>
+            <ThemeToggle />
+            <LanguageSwitch />
           </div>
         </div>
 

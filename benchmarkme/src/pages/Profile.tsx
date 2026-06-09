@@ -3,19 +3,16 @@
  * DATNE: PROFILE.TSX - LIETOTĀJA PROFILA LAPAS KOMPONENTE
  * APRAKSTS: LIETOTĀJA PROFILA INFORMĀCIJAS APSKATE UN REDIĢĒŠANA,
  *           IETVER LIETOTĀJVĀRDA MAIŅU UN KONTA PĀRVALDĪBU
- * VERSIJA: 2026. GADA MARTA VERSIJA
+ * VERSIJA: 2026. GADA MAIJA VERSIJA
  */
-// Importē nepieciešamos React hook-us un komponentus
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Eye, EyeOff, Home, KeyRound, LogOut, Mail, Pencil, Upload, User, X } from "lucide-react";
-// Importē UI komponentus
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-// Importē autentifikācijas hook un API utilītiju
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, setToken } from "@/lib/api";
@@ -449,9 +446,9 @@ const Profile = () => {
   // Ja dati vēl tiek ielādēti, parāda ielādes ziņojumu
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4">
         <div className="text-lg">{t.loading}</div>
-        <div className="fixed right-4 top-4 z-20 flex gap-2">
+        <div className="flex flex-wrap items-center justify-center gap-2">
           <ThemeToggle />
           <LanguageSwitch />
         </div>
@@ -461,30 +458,32 @@ const Profile = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="fixed right-4 top-4 z-20 flex gap-2">
-        <ThemeToggle />
-        <LanguageSwitch />
-      </div>
       <div className="max-w-2xl mx-auto">
-        <div className="flex items-center gap-4 mb-8 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
-          <Button 
-            variant="secondary" 
-            size="sm" 
-            onClick={() => navigate("/dashboard")}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {t.backToDashboard}
-          </Button>
-          <Button 
-            variant="secondary" 
-            size="sm" 
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2"
-          >
-            <Home className="w-4 h-4" />
-            {t.home}
-          </Button>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-8 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              onClick={() => navigate("/dashboard")}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              {t.backToDashboard}
+            </Button>
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              onClick={() => navigate("/")}
+              className="flex items-center gap-2"
+            >
+              <Home className="w-4 h-4" />
+              {t.home}
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <LanguageSwitch />
+          </div>
         </div>
 
         <Card className="bg-gradient-card border-border/50 animate-fade-in-up" style={{ animationDelay: "100ms" }}>

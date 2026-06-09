@@ -29,20 +29,22 @@ const NotFound = () => {
 
   // Atgriež 404 kļūdas lapu ar ziņojumu un saiti uz sākumu
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="fixed right-4 top-4 z-20 flex gap-2">
+    <div className="min-h-screen bg-background px-4 py-6">
+      <div className="mx-auto flex max-w-5xl justify-end gap-2">
         <ThemeToggle />
         <LanguageSwitch />
       </div>
-      <div className="text-center">
-        {/* 404 kļūdas numurs */}
-        <h1 className="mb-4 text-4xl font-bold">404</h1>
-        {/* Kļūdas ziņojums */}
-        <p className="mb-4 text-xl text-gray-600">{t.message}</p>
-        {/* Saite atpakaļ uz sākumlapu */}
-        <a href="/" className="text-blue-500 underline hover:text-blue-700">
-          {t.backHome}
-        </a>
+      <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center">
+        <div className="text-center">
+          {/* 404 kļūdas numurs */}
+          <h1 className="mb-4 text-4xl font-bold">404</h1>
+          {/* Kļūdas ziņojums */}
+          <p className="mb-4 text-xl text-gray-600">{t.message}</p>
+          {/* Saite atpakaļ uz sākumlapu */}
+          <a href="/" className="text-blue-500 underline hover:text-blue-700">
+            {t.backHome}
+          </a>
+        </div>
       </div>
     </div>
   );

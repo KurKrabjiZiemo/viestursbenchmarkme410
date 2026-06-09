@@ -19,9 +19,9 @@ const STORAGE_KEY = "appTheme";
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const getInitialTheme = (): Theme => {
-  // Ja nav saglabātas izvēles, lietotne startē tumšajā tēmā.
+  // Ja nav saglabātas izvēles, lietotne startē gaišajā tēmā.
   const saved = localStorage.getItem(STORAGE_KEY);
-  return saved === "light" ? "light" : "dark";
+  return saved === "dark" ? "dark" : "light";
 };
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
@@ -40,7 +40,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   // Nodrošina korektu tēmu jau pie pirmās ielādes, lai izvairītos no "flash" efekta.
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    const initial: Theme = saved === "light" ? "light" : "dark";
+    const initial: Theme = saved === "dark" ? "dark" : "light";
     if (initial === "dark") {
       document.documentElement.classList.add("dark");
     } else {
